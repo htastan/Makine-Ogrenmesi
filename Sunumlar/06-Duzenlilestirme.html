@@ -51,10 +51,14 @@ class: my-medium-font
 ---
 # Düzenlileştirme (Regularization)
 
-* Sıradan En Küçük Kareler (OLS) yöntemi Gauss-Markov varsayımları altında sapmasız ve en düşük varyanslı (etkin) tahminciler verir. 
+* Sıradan En Küçük Kareler (OLS) yöntemi Gauss-Markov varsayımları altında sapmasız/tutarlı ve en düşük varyanslı (etkin) tahminciler verir. 
+
 * Gözlem sayısının ( `\(n\)` ) değişken sayısından ( `\(p\)` ) çok daha büyük olduğu örtük olarak varsayılır: `\(n&gt;&gt; p\)`
+
 * `\(n = p\)` ise OLS tahmini **tam uyum** ile sonuçlanır. 
+
 * `\(p&gt;n\)` ise sonsuz sayıda OLS çözümü vardır (sonsuz varyans). OLS kullanamayız. 
+
 * Düzenlileştirme: model katsayılarını kısıtlayarak (shrinkage) varyansı düşürebilir miyiz?
 
 ---
@@ -166,10 +170,14 @@ Ridge regresyonu OLS'ye çok benzer ancak amaç fonksiyonuna bir ceza terimi ekl
 # Elastik Net 
 
 * [Zou ve Hastie (2005)](https://rss.onlinelibrary.wiley.com/doi/full/10.1111/j.1467-9868.2005.00503.x) ridge ve LASSO regresyonlarını özel durum olarak barındıran bir model önermiştir. 
+
 * Naif elastik net aşağıdaki fonksiyonu en küçük yapacak şekilde katsayıları seçer: 
 `$$\sum_{i=1}^{n}\left(y_{i}-\beta_{0}-\sum_{j=1}^{p} \beta_{j} x_{i j}\right)^{2}+ \lambda_1  \sum_{j=1}^p \beta_j^2+\lambda_2 \sum_{j=1}^{p}\left|\beta_{j}\right|=\mathrm{SSR}+\lambda_1  \sum_{j=1}^p \beta_j^2+\lambda_2 \sum_{j=1}^{p}\left|\beta_{j}\right|$$`
+
 * Naif yaklaşım: iki adımlı tahmin, önce Verilmiş bir `\(\lambda_2\)` değeri için ridge regresyonunu tahmin et; ikinci adıma LASSO uygula. 
+
 * Ancak bu yöntem iki kere küçültme yaptığı için kestirim performansı başarılı değildir. 
+
 * Zou ve Hastie naif yaklaşım yerine alternatif bir tahmin çerçevesi önermiştir.
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>

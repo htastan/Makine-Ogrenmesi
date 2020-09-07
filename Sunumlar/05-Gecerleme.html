@@ -133,10 +133,15 @@ class: my-medium-font
 ---
 # `\(k\)`-Katlı Çapraz Geçerlemede Sapma-Varyans Ödünümü
 * `\(k\)`-Katlı çapraz geçerleme (ÇG) biri-hariç çapraz geçerlemeye göre hesaplama açısından avantaj sağlar. 
+
 * Ancak asıl önemli avantaj test hatasının biri-hariç çapraz geçerlemeye (LOOCV) göre daha doğru tahmin edilmesidir. 
+
 * Çapraz geçerleme test hatasını fazla tahmin etme eğilimlidir. LOOCV ise test hatasını sapmasız tahmin eder. `\(k\)`-katlı ÇG bu ikisinin arasında bir yerdedir. 
+
 * Bu açıdan bakıldığında her seferinde LOOCV'yi tercih etmemiz gerekir. 
+
 * Ancak `\(k\)`-katlı çapraz geçerlemenin varyansı biri-hariç ÇG'ye göre daha düşüktür.
+
 * Bunun sebebi LOOCV'de test tahminlerinin birbiriyle çok yüksek ilişkili olmasıdır.
 
 ---
@@ -153,7 +158,9 @@ olarak tanımlarsak Biri-Hariç Çapraz Geçerleme test hatası aşağıdaki gib
 ---
 # Zaman Serisi Verileri 
 * Zaman serisi verileriyle öngörü modellerin örneklem-dışı (out-of-sample) öngörü başarısı değerlendirilirken iki yaklaşım benimsenebilir.
+
 * Geleneksel Yaklaşım ve Çapraz Geçerleme Yaklaşımı
+
 * Zaman serileri genellikle türdeş ve bağımsız (iid) olmaz. Ayrıca verilerdeki kronolojik yapının bozulmaması gerekir. Bu nedenle rassal örneklemeyle çapraz geçerleme yapamayız. 
 
 **Geleneksel Yaklaşım**

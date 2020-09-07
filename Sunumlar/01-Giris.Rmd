@@ -1,26 +1,27 @@
-<!DOCTYPE html>
-<html lang="" xml:lang="">
-  <head>
-    <title>Giriş</title>
-    <meta charset="utf-8" />
-    <meta name="author" content="Hüseyin Taştan" />
-    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
-    <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
-  </head>
-  <body>
-    <textarea id="source">
-class: center, middle, inverse, title-slide
-
-# Giriş
-## (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES 2020)
-### Hüseyin Taştan
-### Yıldız Teknik Üniversitesi
+---
+title: "Giriş"
+author: "Hüseyin Taştan"
+#date: "Ağustos 2020"
+output:
+  xaringan::moon_reader:
+    css: [default, metropolis]
+    lib_dir: libs
+    nature:
+      beforeInit: "macros.js"
+      highlightStyle: github
+      highlightLines: yes
+      countIncrementalSlides: no
+      ratio: '16:9'
+  html_document:
+    df_print: paged
+  pdf_document: default
+subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES 2020)
+institute: Yıldız Teknik Üniversitesi
 
 ---
-
 class: my-medium-font
 
-&lt;style type="text/css"&gt;
+<style type="text/css">
 .remark-slide-content {
     font-size: 25px;
     padding: 1em 4em 1em 4em;
@@ -34,7 +35,7 @@ class: my-medium-font
 .my-medium-font {
   font-size: 30px;
 }
-&lt;/style&gt;
+</style>
 
 
 
@@ -110,7 +111,7 @@ class: my-medium-font
 
 ---
 # Makine Öğrenmesi Nedir? 
-&gt; “Makine öğrenmesi bilgisayarlara açıkça programlama olmadan öğrenme yeteneği kazandıran bir çalışma alanıdır.” - Arthur Samuel  
+> “Makine öğrenmesi bilgisayarlara açıkça programlama olmadan öğrenme yeteneği kazandıran bir çalışma alanıdır.” - Arthur Samuel  
 
 - Yapay zeka alanının öncülerinden olan [Arthur Samuel](https://en.wikipedia.org/wiki/Arthur_Samuel), makine öğrenmesi kavramının popülerleşmesine önemli katkılar yapmıştır. 
 
@@ -121,16 +122,16 @@ class: my-medium-font
 
 - Tom Mitchell Machine Learning başlıklı ders kitabında makine öğrenmesi kavramını *iyi tanımlı öğrenme problemi* çerçevesinde incelemektedir:
 
-&gt; A computer program is said to learn from experience E with respect to some task T and some performance measure P, if its performance on T, as measured by P, improves with experience E. 
+> A computer program is said to learn from experience E with respect to some task T and some performance measure P, if its performance on T, as measured by P, improves with experience E. 
 
-&gt; “Dama oynamayı öğrenen bir bilgisayar, bu oyunu defalarca oynayarak elde ettiği tecrübeyle kazanma yüzdesi ile ifade edilen performansını geliştirebilir” (Mitchell, 1997, p. 2).
+> “Dama oynamayı öğrenen bir bilgisayar, bu oyunu defalarca oynayarak elde ettiği tecrübeyle kazanma yüzdesi ile ifade edilen performansını geliştirebilir” (Mitchell, 1997, p. 2).
 
 - Öyleyse bir makine bir görevi yerine getirirken deneyimlerden (verilerden) hareketle performansını geliştirerek “öğrenir” diyebiliriz.
 
 ---
 # Dama oyunu için öğrenme problemi 
 
-&gt; “A computer program is said to learn from experience E with respect to some task T and some performance measure P, if its performance on T, as measured by P, improves with experience E”.
+> “A computer program is said to learn from experience E with respect to some task T and some performance measure P, if its performance on T, as measured by P, improves with experience E”.
 
 - Görev (**T**): dama oynama
 
@@ -154,25 +155,25 @@ Bu problemde:
 ---
 # Makine Öğrenmesi Nedir? 
 
-&gt; “Yapay öğrenme, bilgisayarların örnek veri ya da geçmiş deneyimi kullanarak başarımlarını artıracak biçimde programlanmasıdır”. Alpaydın (2018, s.3) 
+> “Yapay öğrenme, bilgisayarların örnek veri ya da geçmiş deneyimi kullanarak başarımlarını artıracak biçimde programlanmasıdır”. Alpaydın (2018, s.3) 
 
 - Yapay öğrenme ya da makine öğrenmesi, betimleyici veya kestirimsel (predictive) modellerin geçmiş deneyim ve verilerle birleştirilerek tahmin edilmesinde istatistik teorisini kullanır. 
 
 - Örnek (Alpaydın, 2018): Bir süpermarket zinciri için sepet çözümlemesi: Eğer X malını alan müşteriler sıklıkla Y malını da alıyorsa ve bir müşteri X malını almışsa, o Y malını almaya aday bir müşteridir (çapraz satış)
 
-- Müşterinin geçmişte satın aldığı ürün ya da ürünleri içeren X kümesine koşullu olarak Y malı için `\(Pr(Y|X)\)` olasılığını öğrenmeyi amaçlıyoruz. Böylece o müşteri grubuna yönelik pazarlama stratejileri geliştirilebilir.
+- Müşterinin geçmişte satın aldığı ürün ya da ürünleri içeren X kümesine koşullu olarak Y malı için $Pr(Y|X)$ olasılığını öğrenmeyi amaçlıyoruz. Böylece o müşteri grubuna yönelik pazarlama stratejileri geliştirilebilir.
 
 ---
 # Makine Öğrenmesi Nedir? 
 
-&gt; “...Makine öğrenmesi, temel amacı verilerden hareketle kestirim (regresyon), sınıflandırma, ve kümeleme veya gruplama problemlerinin çözümüne yönelik algoritmaların geliştirilmesidir” Susan Athey (2018). 
+> “...Makine öğrenmesi, temel amacı verilerden hareketle kestirim (regresyon), sınıflandırma, ve kümeleme veya gruplama problemlerinin çözümüne yönelik algoritmaların geliştirilmesidir” Susan Athey (2018). 
 
 - Athey’nin tanımı makine öğrenmesi çalışma alanına yoğunlaşmaktadır. Ancak diğer tanımlarla ortak odak noktası kestirim (prediction)’dir.  
 
 ---
 # İstatistiksel Öğrenme 
 
-&gt; “İstatistiksel öğrenme (statistical learning), karmaşık veri kümelerinin modellenmesi ve anlaşılması için bir dizi araç geliştirmekle uğraşır. İstatistik bilimi içinde yakın zamanda geliştirilen İstatistiksel Öğrenme alanı, bilgisayar bilimi ve özellikle makine öğrenimindeki paralel gelişmelerle yakından ilişkilidir.” James, Witten, Hastie ve Tibshirani (2017). 
+> “İstatistiksel öğrenme (statistical learning), karmaşık veri kümelerinin modellenmesi ve anlaşılması için bir dizi araç geliştirmekle uğraşır. İstatistik bilimi içinde yakın zamanda geliştirilen İstatistiksel Öğrenme alanı, bilgisayar bilimi ve özellikle makine öğrenimindeki paralel gelişmelerle yakından ilişkilidir.” James, Witten, Hastie ve Tibshirani (2017). 
 
 - Bu tanım S. Athey’nin tanımına yakındır.
 
@@ -256,55 +257,55 @@ Detaylar için bkz. Alpaydın (2018, s. 10 ve s. 383)
 # Ekonometri ve Makine Öğrenmesi 
 
 - Tipik bir (gözetimli) makine öğrenmesi problemini aşağıdaki gibi yazabiliriz: 
-`$$y = f(x_1, x_2, \ldots, x_p) + \epsilon$$`
-Burada `\(y\)` çıktı değişkenini (etiketleri), `\(\{x_1, x_2, \ldots, x_p\}\)` ise özellikleri ifade etmektedir. `\(\epsilon\)` rassal hata terimidir. 
+$$y = f(x_1, x_2, \ldots, x_p) + \epsilon$$
+Burada $y$ çıktı değişkenini (etiketleri), $\{x_1, x_2, \ldots, x_p\}$ ise özellikleri ifade etmektedir. $\epsilon$ rassal hata terimidir. 
 
-- Bilinmeyen fonksiyon kalıbı `\(f(\cdot)\)` ile gösterilmiştir. 
+- Bilinmeyen fonksiyon kalıbı $f(\cdot)$ ile gösterilmiştir. 
 
 - Modelin kestirimini şöyle yazalım: 
-`$$\hat{y} = f(x_1, x_2, \ldots, x_p)$$`
-- Makine öğrenmesi probleminde amaç kestirim hatasını, `\(y-\hat{y}\)`, en küçük yapmaktır. 
+$$\hat{y} = f(x_1, x_2, \ldots, x_p)$$
+- Makine öğrenmesi probleminde amaç kestirim hatasını, $y-\hat{y}$, en küçük yapmaktır. 
 Bu çerçeve Ekonometride kullandığımız yaklaşıma çok benzemektedir.
 
 ---
 # Ekonometri ve Makine Öğrenmesi 
 
-- `\(f(\cdot)\)`'in (parametrelerde) doğrusal olduğunu varsayarsak: 
-`$$y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 +\ldots+ \beta_p x_p + \epsilon$$`
+- $f(\cdot)$'in (parametrelerde) doğrusal olduğunu varsayarsak: 
+$$y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 +\ldots+ \beta_p x_p + \epsilon$$
 ekonometri uygulamalarında yaygın olarak kullanılan doğrusal regresyon problemini elde ederiz. 
 
 - Modeli matris notasyonuyla daha kompak bir biçimde yazabiliriz.
 
-`$$\underbrace{\mathbf{y}}_{n\times 1} = \underbrace{\mathbf{X}}_{n\times (p+1)} \underbrace{\mathbf{\beta}}_{(p+1)\times 1} + \underbrace{\mathbf{u}}_{n\times 1}$$`
-Modelde sabit terim dahil olmak üzere `\(p+1\)` bilinmeyen `\(\beta\)` parametresi vardır. 
+$$\underbrace{\mathbf{y}}_{n\times 1} = \underbrace{\mathbf{X}}_{n\times (p+1)} \underbrace{\mathbf{\beta}}_{(p+1)\times 1} + \underbrace{\mathbf{u}}_{n\times 1}$$
+Modelde sabit terim dahil olmak üzere $p+1$ bilinmeyen $\beta$ parametresi vardır. 
 
 ---
 # Ekonometri ve Makine Öğrenmesi 
 
-* **Ekonometri**nin odak noktası modelin bilinmeyen parametre vektörünün, `\(\mathbf{\beta}\)`, sapmasız (mümkün değilse, tutarlı) ve etkin tahminidir. 
+* **Ekonometri**nin odak noktası modelin bilinmeyen parametre vektörünün, $\mathbf{\beta}$, sapmasız (mümkün değilse, tutarlı) ve etkin tahminidir. 
 
 * İktisat bakımından anlamlı yorumlama yapabilme ön plandadır.
 
 * Modelin tahmini: Sıradan En Küçük Kareler (Ordinary Least Squares - OLS) Gauss-Markov varsayımları altında BLUE özelliklerini sağlar.
 
-* Pratikte Çok üzerinde durulmayan bir nokta: gözlem sayısı, `\(n\)`, `\(\mathbf{X}\)` değişken sayısından ( `\(p\)` ) çok daha büyük olmalıdır: `\(n&gt;&gt;p\)` 
+* Pratikte Çok üzerinde durulmayan bir nokta: gözlem sayısı, $n$, $\mathbf{X}$ değişken sayısından ( $p$ ) çok daha büyük olmalıdır: $n>>p$ 
 
-* OLS yöntemi `\(p&gt;n\)` durumunda çalışmaz. 
+* OLS yöntemi $p>n$ durumunda çalışmaz. 
 
-* `\(p=n\)` olursa çalışır mı?
+* $p=n$ olursa çalışır mı?
 
 ---
 # Ekonometri ve Makine Öğrenmesi
 
 * Makine Öğrenmesi (ML) ve Ekonometri farkı: 
 
-&gt;Makine öğrenmesi çıktı değişkeninin kestirimine, yani `\(\hat{y}\)`’ya yoğunlaşır. Ekonometrinin odağında ise `\(\hat{\beta}_j\)`, `\(j=1,2,\ldots,p\)`, vardır. (Mullainathan ve Spiess, 2017)
+>Makine öğrenmesi çıktı değişkeninin kestirimine, yani $\hat{y}$’ya yoğunlaşır. Ekonometrinin odağında ise $\hat{\beta}_j$, $j=1,2,\ldots,p$, vardır. (Mullainathan ve Spiess, 2017)
 
-* Ekonometri: `\(x_j\)`'nin `\(y\)` üzerindeki nedensel (causal) etkisi ne kadardır? (ölçüm problemi).
+* Ekonometri: $x_j$'nin $y$ üzerindeki nedensel (causal) etkisi ne kadardır? (ölçüm problemi).
 
 * Ekonometri: nedensel etkilerin sapmasız/tutarlı ve etkin (en düşük varyanslı) tahmini ön planda. İktisat teorisi yol gösterici. 
 
-* **ML**: `\(y\)`’nin kestiriminde en başarılı modellerin verilerden öğrenilmesi (yani tahmin edilmesi) ön planda 
+* **ML**: $y$’nin kestiriminde en başarılı modellerin verilerden öğrenilmesi (yani tahmin edilmesi) ön planda 
 
 * Ekonometri ve ML arasındaki sınırlar çok keskin değil. ML algoritmaları ekonometrik modellemede faydalı olabileceği gibi iktisat teorisi de ML uygulamalarında kullanılabilir. 
 (ekonometri ve makine öğrenmesinin kapsamlı karşılaştırması için bkz. Athey ve Imbens (2019)). 
@@ -360,127 +361,19 @@ Samuel,  A. L. (1959), ''Some studies in machine learning using the game of chec
 
 Varian, H.R. (2014), ''Big Data: New Tricks for Econometrics'', *Journal of Economic Perspectives*, 28 (2): 3–28.
 
-&lt;!-- --- --&gt;
-&lt;!-- # Videolar  --&gt;
+<!-- --- -->
+<!-- # Videolar  -->
 
-&lt;!-- [S. Mullainathan, Machine Learning and Prediction in Economics and Finance](https://www.youtube.com/watch?v=xl3yQBhI6vY) --&gt;
+<!-- [S. Mullainathan, Machine Learning and Prediction in Economics and Finance](https://www.youtube.com/watch?v=xl3yQBhI6vY) -->
 
-&lt;!-- [S. Mullainathan, Machine Intelligence and Public Policy](https://www.youtube.com/watch?v=W7izsrYGhdU) --&gt;
+<!-- [S. Mullainathan, Machine Intelligence and Public Policy](https://www.youtube.com/watch?v=W7izsrYGhdU) -->
 
-&lt;!-- [Susan Athey, Machine Learning and Causal Inference for Policy Evaluation](https://www.youtube.com/watch?v=Yx6qXM_rfKQ) --&gt;
+<!-- [Susan Athey, Machine Learning and Causal Inference for Policy Evaluation](https://www.youtube.com/watch?v=Yx6qXM_rfKQ) -->
 
-&lt;!-- [T. Hastie, Statistical learning with big data. A talk by Trevor Hastie](https://www.youtube.com/watch?v=0EWJZIC4JxA) --&gt;
+<!-- [T. Hastie, Statistical learning with big data. A talk by Trevor Hastie](https://www.youtube.com/watch?v=0EWJZIC4JxA) -->
 
-&lt;!-- [Artificial Intelligence, the History and Future - with Chris Bishop](https://www.youtube.com/watch?v=8FHBh_OmdsM) --&gt;
+<!-- [Artificial Intelligence, the History and Future - with Chris Bishop](https://www.youtube.com/watch?v=8FHBh_OmdsM) -->
 
-&lt;!-- [İstatistiksel Öğrenme Dersleri YouTube Oynatma Listesi: Introduction to Statistical Learning by Robert Tibshirani, Trevor Hastie, and Daniela Witten.](https://www.youtube.com/playlist?list=PLOg0ngHtcqbPTlZzRHA2ocQZqB1D_qZ5V) --&gt;
-    </textarea>
-<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
-<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
-<script src="macros.js"></script>
-<script>var slideshow = remark.create({
-"highlightStyle": "github",
-"highlightLines": true,
-"countIncrementalSlides": false,
-"ratio": "16:9"
-});
-if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
-  window.dispatchEvent(new Event('resize'));
-});
-(function(d) {
-  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
-  if (!r) return;
-  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
-  d.head.appendChild(s);
-})(document);
+<!-- [İstatistiksel Öğrenme Dersleri YouTube Oynatma Listesi: Introduction to Statistical Learning by Robert Tibshirani, Trevor Hastie, and Daniela Witten.](https://www.youtube.com/playlist?list=PLOg0ngHtcqbPTlZzRHA2ocQZqB1D_qZ5V) -->
 
-(function(d) {
-  var el = d.getElementsByClassName("remark-slides-area");
-  if (!el) return;
-  var slide, slides = slideshow.getSlides(), els = el[0].children;
-  for (var i = 1; i < slides.length; i++) {
-    slide = slides[i];
-    if (slide.properties.continued === "true" || slide.properties.count === "false") {
-      els[i - 1].className += ' has-continuation';
-    }
-  }
-  var s = d.createElement("style");
-  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
-  d.head.appendChild(s);
-})(document);
-// delete the temporary CSS (for displaying all slides initially) when the user
-// starts to view slides
-(function() {
-  var deleted = false;
-  slideshow.on('beforeShowSlide', function(slide) {
-    if (deleted) return;
-    var sheets = document.styleSheets, node;
-    for (var i = 0; i < sheets.length; i++) {
-      node = sheets[i].ownerNode;
-      if (node.dataset["target"] !== "print-only") continue;
-      node.parentNode.removeChild(node);
-    }
-    deleted = true;
-  });
-})();
-// adds .remark-code-has-line-highlighted class to <pre> parent elements
-// of code chunks containing highlighted lines with class .remark-code-line-highlighted
-(function(d) {
-  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
-  const preParents = [];
-  const findPreParent = function(line, p = 0) {
-    if (p > 1) return null; // traverse up no further than grandparent
-    const el = line.parentElement;
-    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
-  };
 
-  for (let line of hlines) {
-    let pre = findPreParent(line);
-    if (pre && !preParents.includes(pre)) preParents.push(pre);
-  }
-  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
-})(document);</script>
-
-<script>
-(function() {
-  var links = document.getElementsByTagName('a');
-  for (var i = 0; i < links.length; i++) {
-    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
-      links[i].target = '_blank';
-    }
-  }
-})();
-</script>
-
-<script>
-slideshow._releaseMath = function(el) {
-  var i, text, code, codes = el.getElementsByTagName('code');
-  for (i = 0; i < codes.length;) {
-    code = codes[i];
-    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
-      text = code.textContent;
-      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
-          /^\$\$(.|\s)+\$\$$/.test(text) ||
-          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
-        code.outerHTML = code.innerHTML;  // remove <code></code>
-        continue;
-      }
-    }
-    i++;
-  }
-};
-slideshow._releaseMath(document);
-</script>
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-(function () {
-  var script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
-  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
-    script.src  = script.src.replace(/^https?:/, '');
-  document.getElementsByTagName('head')[0].appendChild(script);
-})();
-</script>
-  </body>
-</html>

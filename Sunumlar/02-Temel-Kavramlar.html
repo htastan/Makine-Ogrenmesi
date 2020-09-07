@@ -40,12 +40,15 @@ class: my-medium-font
 # Plan
 
 - Makine Öğrenmesi Problemi 
+
 - Öğrenme türleri: Gözetimli Öğrenme vs. Gözetimsiz Öğrenme
+
 - Gözetimli Öğrenme: Regresyon problemleri 
+
 - Gözetimli Öğrenme: Sınıflandırma problemleri 
-- İndirgenemez Hata 
+
 - Aşırı Uyum (overfitting)
-- Eğitim ve Test verileri 
+
 - Sapma-Varyans ilişkisi
 
 
@@ -128,7 +131,9 @@ Burada `\(Var(\epsilon)\)` indirgenemez hatanın varyansıdır.
 
 - Öznitelikler: `\(\mathbf{X}_i = \{X_{i1}, X_{i2},\ldots, X_{ip}\}\)`, `\(i=1,2,\ldots,n\)`
 - Çıktı değerleri: `\(Y_1, Y_2, \ldots, Y_n\)` 
+
 - Amaç eğitim verilerinden hareketle `\(f(X)\)` kestirim modelinin (kara kutu?) tahmini. 
+
 - Kullanabileceğimiz istatistiksel öğrenme yöntemleri iki ana gruba ayrılabilir: 
   - **Parametrik Yöntemler**: modelin formuna ilişkin bir varsayım gerektirir (doğrusal, karesel, kübik, vb)
   - **Parametrik olmayan yöntemler**: `\(f\)`'in fonksiyonel kalıbına ilişkin bir varsayım yapılmaz. Kestirimlerin gözlemlenen değerlere mümkün olduğunca yaklaştırılması amaçlanır
@@ -138,7 +143,7 @@ Burada `\(Var(\epsilon)\)` indirgenemez hatanın varyansıdır.
 
 Kabaca iki adımdan oluşur: 
 
-1.ADIM:  Kestirim fonksiyonu f( )’in şekline ilişkin varsayım yapmamız gerekir, örneğin doğrusal, karesel, kübik, vs. 
+1.ADIM:  Kestirim fonksiyonu `\(f(\cdot)\)`’in şekline ilişkin varsayım yapmamız gerekir. 
 
 Örneğin: Lineer kalıp
 `$$f_L(X) = \beta_0 + \beta_1 X+\epsilon$$`
@@ -233,11 +238,14 @@ Bu grafikte, sırasıyla, lineer model, 4ncü derece polinom, ve 15nci derece po
 ---
 # Doğruluk vs. Yorumlanabilirlik
 
-- Kısıtlayıcı bir model yerine neden daha esnek bir tahmin modeli kullanmıyoruz? 
+- Kısıtlayıcı bir model yerine neden daha esnek bir tahmin modeli kullanmıyoruz?
+
 - Bunun başlıca iki nedeni vardır: 
-1. Doğrusal regresyon gibi kısıtlayıcı varsayımlara dayanan modellerde yorumlama ve istatistiksel çıkarsama çok daha kolaydır. Örneğin, regresyon modelinde `\(\beta_j\)` katsayıları 
-`\(X_j\)`'nin çıktı üzerindeki marjinal etkisini ölçer. 
-1. Modelin yorumlanabilirliği ikinci planda olsa bile, fonksiyon kalıbı esnek olmayan modeller daha yüksek öndeyi (kestirim, prediction) başarısına sahip olabilirler. 
+
+  1. Doğrusal regresyon gibi kısıtlayıcı varsayımlara dayanan modellerde yorumlama ve istatistiksel çıkarsama çok daha kolaydır. Örneğin, regresyon modelinde `\(\beta_j\)` katsayıları 
+`\(X_j\)`'nin çıktı üzerindeki marjinal etkisini ölçer.
+
+  1. Modelin yorumlanabilirliği ikinci planda olsa bile, fonksiyon kalıbı esnek olmayan modeller daha yüksek öndeyi (kestirim, prediction) başarısına sahip olabilirler. 
 
 ---
 # Esneklik ve Yorumlanabilirlik arasındaki ödünüm
@@ -449,7 +457,7 @@ Not: Kesikli siyah çizgi Bayes hata oranıdır (veriler simülasyonla üretildi
 
 - Model karmaşıklığı arttıkça test verisindeki kestirim hatası bir noktaya kadar azalır, daha sonra artmaya başlar. Sapma düşük olsa da varyans çok yüksektir (aşırı uyum)
 
-- Test kestirim hatasının en düşük olduğu model için sapma ve varyans en optimal düzeydedir. 
+- Test kestirim hatasının en düşük olduğu model için sapma ve varyans optimal düzeydedir. 
 ]
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>

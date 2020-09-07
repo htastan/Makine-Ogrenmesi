@@ -55,7 +55,7 @@ class: my-medium-font
 ---
 # Basit Doğrusal Regresyon Modeli 
 
-* `\(f(x)\)`'in yaklaşık olarak doğrusal olduğunu varsayalım. Ayrıca sadece bir öznitelik olsun. Bu durumda Popülasyon Regresyon Fonksiyonu: 
+* `\(f(x)\)`'in yaklaşık olarak doğrusal olduğunu varsayalım. Ayrıca sadece bir öznitelik olsun. Bu durumda Popülasyon Regresyon Fonksiyonu (PRF): 
 `$$y =  \beta_0 + \beta_1 X + \epsilon$$` 
 
 * Eğitim verisinden, `\(\{y_i, x_i: i=1,2,\ldots,n\}\)`,  hareketle tahmin edilen değer 
@@ -65,12 +65,12 @@ class: my-medium-font
 `$$y_i = \underbrace{\hat{\beta}_0 + \hat{\beta}_1 x_i}_{\hat{y}_i} + e_i$$`
 
 * Tahmin Yöntemi: Sıradan En Küçük Kareler (OLS - Ordinary Least Squares)
-Kalıntıların karelerinin toplamını en küçük yapan `\(\hat{\beta}_j\)`'ları seç.
+Kalıntıların karelerinin toplamını en küçük yapan `\(\hat{\beta}_j\)`'ları seçer.
 
 ---
 # OLS Tahmini 
 
-* Tahmin problemi: 
+Optimizasyon problemi: 
 `$$\min_{\hat{\beta}_0, \hat{\beta}_1} SSR = \sum_{i=1}^n (y_i -  \hat{\beta}_0 - \hat{\beta}_1 x_i)^2$$`
 
 SSR: sum of squared residuals (KKT - kalıntı kareleri toplamı)
@@ -129,7 +129,7 @@ katsayılar da değişir.
 
 PRF: `\(Y= 2 + 3X + \epsilon\)` (simülasyonla elde edildiği için biliniyor)
 
-![:scale 77%](img/reg3.PNG)
+.center[![:scale 77%](img/reg3.PNG)]
 
 Kırmızı: gerçek ilişki (PRF), siyah: tahmin, sağda: çok sayıda tekrarlı verilerdle tahmin edilen OLS örneklem fonksiyonları. (ISLR, Fig.3.2, s.64)
 
@@ -173,7 +173,7 @@ Kırmızı: gerçek ilişki (PRF), siyah: tahmin, sağda: çok sayıda tekrarlı
 * Belirlilik katsayısı, `\(0\leq R^2\leq 1\)`: 
 `$$R^2 = \frac{SSE}{SST} = 1 - \frac{SSR}{SST}$$`
 
-* Yorum: `\(y\)`'deki değişkenliğin yaklaşık `\(100\times R^2\)`% kadarı `\(x\)` tarafından açıklanabilmektedir.
+* Yorum: `\(y\)`'deki değişkenliğin yaklaşık %$100\times R^2$ kadarı `\(x\)` tarafından açıklanabilmektedir.
 
 * Zayıf nokta: Modele yeni değişkenler eklendikçe `\(R^2\)` her zaman artar ya da aynı kalır, hiç bir zaman azalmaz. Model seçiminde kullanılamaz. 
 
@@ -215,9 +215,11 @@ SE = standart hata (standard error)
 
 (Not: Burada `\(T\)`, `\(n-2\)` serbestlik derecesine sahip bir `\(t\)` rassal değişkenidir.)
 
-* Tip-I hata olasılığı: `\(Pr(H_0~~ RED~|~H_0~DOĞRU)\)`. Bir boş hipotezin doğru olup olmadığı pratikte hiç bir zaman bilinemez. 
+* Bir boş hipotezin doğru olup olmadığı pratikte hiç bir zaman bilinemez. İki tip hata yapılabilir. Bunların olasılıkları: 
 
-* Tip-II hata olasılığı: `\(Pr(H_0~~ KABUL~|~H_0~YANLIŞ)\)`. Bu olasılığı pratikte belirleyemeyiz.
+  * Tip-I hata olasılığı: `\(Pr(H_0~~ RED~|~H_0~DOĞRU)\)`.
+
+  * Tip-II hata olasılığı: `\(Pr(H_0~~ KABUL~|~H_0~YANLIŞ)\)`. Bu olasılığı pratikte belirleyemeyiz.
 
 ---
 # p-değeri 
@@ -227,7 +229,7 @@ SE = standart hata (standard error)
 * `\(p\)`-değeri: Elimizdeki örneklemden hareketle aynı testi yapsak boş hipotezi kabul etmemizle sonuçlanacak en büyük anlamlılık düzeyi, `\(\alpha\)`, kaçtır? 
 
 * Örnek: `\(n-2=65\)`, hesaplanan `\(t\)` istatistiği `\(t=1.82\)` olsun. 
-`$$p-değeri=Pr(T&gt;1.82|H_0) + Pr(T&lt;-.82|H_0) = 0.0367 + 0.0367 = 0.0734$$`
+`$$p-değeri=Pr(T&gt;1.82|H_0) + Pr(T&lt;-1.82|H_0) = 0.0367 + 0.0367 = 0.0734$$`
 
 ```r
 2*pt(1.82, df=65, lower.tail = FALSE)
@@ -237,7 +239,7 @@ SE = standart hata (standard error)
 ## [1] 0.07336374
 ```
 
-* `\(H_0\)`'ın reddi için en düşük anlamlılık düzeyi=7.34%. Bundan daha yüksek tüm `\(\alpha\)` düzeylerinde `\(H_0\)` RED. Örneğin, testi `\(\alpha=5\%\)` düzeyinde yaparsak boş hipotez reddedilemez. `\(p\)`-değeri ne kadar küçükse elimizdeki örneklemde boş hipotez aleyhine kanıt o kadar güçlü demektir.
+* `\(H_0\)`'ın reddi için en düşük anlamlılık düzeyi=%7.34. Bundan daha yüksek tüm `\(\alpha\)` düzeylerinde `\(H_0\)` RED. Örneğin, testi `\(\alpha=0.05\)` düzeyinde yaparsak boş hipotez reddedilemez. `\(p\)`-değeri ne kadar küçükse elimizdeki örneklemde boş hipotez aleyhine kanıt o kadar güçlü demektir.
 
 ---
 # Çoklu Regresyon Modeli 
