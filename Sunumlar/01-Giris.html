@@ -4,6 +4,7 @@
     <title>Giriş</title>
     <meta charset="utf-8" />
     <meta name="author" content="Hüseyin Taştan" />
+    <script src="libs/header-attrs-2.8/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
   </head>
@@ -12,7 +13,7 @@
 class: center, middle, inverse, title-slide
 
 # Giriş
-## (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES 2020)
+## (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES 2021)
 ### Hüseyin Taştan
 ### Yıldız Teknik Üniversitesi
 
@@ -41,25 +42,28 @@ class: my-medium-font
 
 # Plan
 
-- Dersin tanıtımı
+- [Dersin tanıtımı](#derst)
 
-- Öğrenme ve makine öğrenmesi
+- [Öğrenme ve makine öğrenmesi](#ogrenme)
 
-- Yapay Zeka, Veri Bilimi, Veri Madenciliği
+- [Yapay Zeka, Veri Bilimi, Veri Madenciliği](#yapayz)
 
-- Gözetimli ve gözetimsiz öğrenme, pekiştirmeli öğrenme, derin öğrenme 
+- [Gözetimli ve gözetimsiz öğrenme, pekiştirmeli öğrenme, derin öğrenme](#ogrenmeturleri) 
 
-- Ekonometri ve makine öğrenmesi: farklar ve benzerlikler 
+- [Ekonometri ve makine öğrenmesi: farklar ve benzerlikler](#ekonometri) 
 
-- Kestirim politikası problemleri 
+- [Kestirim politikası problemleri](#kespol) 
+
+- [Kaynakça](#kaynakca)
 
 ---
+name: derst 
 
 # Dersin tanıtımı 
 
-* Türkiye Ekonomi Kurumu 2020 online yaz seminerlerinin bir parçası olarak tasarlanan bu derste temel makine öğrenmesi algoritmalarının giriş düzeyinde incelenmesi amaçlanmaktadır. Ders ağırlıklı olarak gözetimli öğrenme algoritmalarını kapsamaktadır.   
+* Türkiye Ekonomi Kurumu 2021 online yaz seminerlerinin bir parçası olarak tasarlanan bu derste temel makine öğrenmesi algoritmalarının giriş düzeyinde incelenmesi amaçlanmaktadır. Ders ağırlıklı olarak gözetimli öğrenme algoritmalarını kapsamaktadır.   
 
-* Ders kitabı: James, Gareth, D. Witten, T. Hastie, R. Tibshirani (2017), An Introduction to Statistical Learning with Applications in R, Springer. Kitabın elektronik versiyonuna aşağıdaki linklerden ulaşabilirsiniz: [http://faculty.marshall.usc.edu/gareth-james/ISL/](http://faculty.marshall.usc.edu/gareth-james/ISL/)
+* Ders kitabı: James, Gareth, D. Witten, T. Hastie, R. Tibshirani (2017), An Introduction to Statistical Learning with Applications in R, Springer. Kitabın elektronik versiyonuna aşağıdaki linklerden ulaşabilirsiniz: [https://www.statlearning.com/](https://www.statlearning.com/)
 
 * Ders malzemeleri için link: [https://github.com/htastan/Makine-Ogrenmesi](https://github.com/htastan/Makine-Ogrenmesi)
 
@@ -69,7 +73,7 @@ class: my-medium-font
 ---
 # Günlük ders programı 
 
-1. gün: Giriş, Temel Kavrammlar, R'a Giriş, R ile Tidy veri analizi
+1. gün: Giriş, Temel Kavramlar, R'a Giriş, R ile Tidy veri analizi
 
 2. gün: Gözetimli öğrenme, Regresyon problemleri, R uygulamaları
 
@@ -83,6 +87,8 @@ class: my-medium-font
 
 
 ---
+name: ogrenme 
+
 # Öğrenme Nedir?
 
 Öğrenme (learning), öğrenenin ya da öğretenin bakış açısından çeşitli biçimlerde tanımlanabilir. Örneğin: 
@@ -183,7 +189,9 @@ Bu problemde:
 - Verilerin rassallığı (randomness) dikkate alındığında makine öğrenmesi algoritmalarının «istatistiksel» olması kaçınılmazdır.
 
 ---
-# Makine Öğrenmesi ile ilişkili bazı moda terimler
+name: yapayz 
+
+# Makine Öğrenmesi ile ilişkili alanlar
 
 - **Yapay Zeka** (Artificial Intelligence): bilgisayarların (makinelerin) insanlardan bağımsız olarak akıllıca davranması için araçlar geliştiren disiplin.
 
@@ -202,6 +210,8 @@ background-image: url("img/MLpic3.PNG")
 background-size: cover
 
 ---
+name: ogrenmeturleri 
+
 # Gözetimli Öğrenme 
 
 * Makine öğrenmesi algoritmaları ikiye ayrılabilir: gözetimli ya da güdümlü (supervised) ve gözetimsiz (unsupervised) öğrenme. 
@@ -253,6 +263,8 @@ Detaylar için bkz. Alpaydın (2018, s. 10 ve s. 383)
 .center[![:scale 50%](img/ann1.PNG)]
 
 ---
+name: ekonometri 
+
 # Ekonometri ve Makine Öğrenmesi 
 
 - Tipik bir (gözetimli) makine öğrenmesi problemini aşağıdaki gibi yazabiliriz: 
@@ -310,6 +322,8 @@ Modelde sabit terim dahil olmak üzere `\(p+1\)` bilinmeyen `\(\beta\)` parametr
 (ekonometri ve makine öğrenmesinin kapsamlı karşılaştırması için bkz. Athey ve Imbens (2019)). 
 
 ---
+name: kespol 
+
 # Kestirim Politikası Problemleri 
 
 * Ekonometrinin odağında dikkatlice yapılmış nedensel analizler yer alır. 
@@ -341,6 +355,8 @@ Modelde sabit terim dahil olmak üzere `\(p+1\)` bilinmeyen `\(\beta\)` parametr
 
 ---
 class: my-small-font
+name: kaynakca 
+
 # Kaynakça
 
 Alpaydın, Ethem (2018), *Yapay Öğrenme*, 4. Baskı (Ethem Alpaydın, *Introduction to Machine Learning*, 2. baskıdan çeviri), Boğaziçi Üniversitesi Yayınevi, İstanbul. 
@@ -374,6 +390,8 @@ Varian, H.R. (2014), ''Big Data: New Tricks for Econometrics'', *Journal of Econ
 &lt;!-- [Artificial Intelligence, the History and Future - with Chris Bishop](https://www.youtube.com/watch?v=8FHBh_OmdsM) --&gt;
 
 &lt;!-- [İstatistiksel Öğrenme Dersleri YouTube Oynatma Listesi: Introduction to Statistical Learning by Robert Tibshirani, Trevor Hastie, and Daniela Witten.](https://www.youtube.com/playlist?list=PLOg0ngHtcqbPTlZzRHA2ocQZqB1D_qZ5V) --&gt;
+
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
@@ -423,6 +441,32 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     deleted = true;
   });
 })();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
 // adds .remark-code-has-line-highlighted class to <pre> parent elements
 // of code chunks containing highlighted lines with class .remark-code-line-highlighted
 (function(d) {
@@ -440,17 +484,6 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   }
   preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
 })(document);</script>
-
-<script>
-(function() {
-  var links = document.getElementsByTagName('a');
-  for (var i = 0; i < links.length; i++) {
-    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
-      links[i].target = '_blank';
-    }
-  }
-})();
-</script>
 
 <script>
 slideshow._releaseMath = function(el) {

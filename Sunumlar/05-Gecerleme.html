@@ -4,6 +4,7 @@
     <title>Model Değerlendirme ve Geçerleme</title>
     <meta charset="utf-8" />
     <meta name="author" content="Hüseyin Taştan" />
+    <script src="libs/header-attrs-2.8/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
   </head>
@@ -12,7 +13,7 @@
 class: center, middle, inverse, title-slide
 
 # Model Değerlendirme ve Geçerleme
-## (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2020)
+## (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
 ### Hüseyin Taştan
 ### Yıldız Teknik Üniversitesi
 
@@ -50,6 +51,8 @@ class: my-medium-font
 
 - `\(k\)`-Katlı Çapraz Geçerleme
 
+- Bootstrap 
+
 ---
 # Eğitim ve Test Hatası
 .center[![:scale 80%](img/biasvar1.PNG)] 
@@ -68,9 +71,10 @@ class: my-medium-font
 ]
 
 ---
-# Test Hatası Nasıl Hesaplanır? 
-## Geçerleme Yaklaşımı
+# Test Hatası Nasıl Hesaplanır? Geçerleme Yaklaşımı
+
 * Pratikte genellikle elimizde sadece bir veri seti vardır. Modelin kestirim başarısını ölçebileceğimiz ayrı bir test veri seti genellikle yoktur. 
+
 * Bu durumda verileri rassal olarak iki gruba ayırabiliriz: eğitim verisi ve geçerleme (validation, hold-out) verisi 
 
 .center[![:scale 80%](img/valid2.PNG)] 
@@ -84,9 +88,8 @@ class: my-medium-font
 * Sağda: 10 kere tekrarlanmış geçerleme MSE değerleri. Fazla değişkenlik olduğuna dikkat ediniz. 
 
 ---
-# Geçerleme  yaklaşımı
+# Geçerleme  yaklaşımı: Zayıf tarafları
 
-## Zayıf tarafları
 * Veriler rastgele ikiye ayrıldığı için buradan kaynaklı belirsizliği dikkate almamız gerekir. Bunun için süreci tekrar ederek çok sayıda rastgele geçerleme tahminleri yaptığımızda da, önceki grafikte görüldüğü gibi, yüksek değişkenlik gözlemlenmektedir.
 
 * Geçerleme yaklaşımında sadece eğitim verilerinin model tahmininde (eğitiminde) kullanıldığı unutulmamalıdır. Geçerleme veri seti her bir model için (örneğimizde her bir `\(p\)` için) sadece kestirim hatalarının hesaplanmasında kullanılır. Eğitim setinde daha az veri kullanıldığı için modellerin performansı azalır. Sonuçta geçerleme hatası test hatasını olduğundan yüksek tahmin edebilir. 
@@ -184,6 +187,123 @@ olarak tanımlarsak Biri-Hariç Çapraz Geçerleme test hatası aşağıdaki gib
 
 Detaylar için bkz. Hyndman, R.J., &amp; Athanasopoulos, G. (2019) Forecasting: principles and practice, 3rd edition, OTexts: Melbourne, Australia. 
 [https://otexts.com/fpp3/](https://otexts.com/fpp3/)
+
+---
+# Bootstrap 
+
+- Bootstrap özellikle istatistiksel tahmincilerin özelliklerini değerlendirmede sıklıkla kullanılan bir yeniden örnekleme yöntemidir.  
+
+- Bootstrap örneklemesinin özünde mevcut veri setinden yerine koyarak yönelemeli örnekleme yapılması bulunmaktadır. 
+
+- Elimizdeki veri setinden yerine koyma usulüyle tesadüfi örnekleme yapıldığı için bazı değerlerin tekrar etme şansı vardır.  
+ 
+
+- Özelliklerini incelemek istediğimiz istatistik her bir bootstrap örneklemi için tahmin edilir (örneğin B=1000 kez).  
+
+- Sonunda ilgili tahmincinin örnekleme dağılımı yaklaşık olarak oluşturulabilir.  
+
+---
+# Bootstrap 
+
+- En kolay bootstrap yöntemi iyi tanımlı bir anakütleden birbirinden bağımsız ve türdeş dağılmış (identically and independently distributed - iid) bir veri seti üzerinden tanımlanabilir.  
+
+- Pratikte elimizde ilgili anakütleden çekilmiş sadece bir örneklem bulunur.  
+
+- İstatistiksel çıkarsamada standart yaklaşım ilgili tahmicinin örnekleme dağılımının oluşturulmasına dayanır.  
+
+- Teorik olarak bir örnekleme dağılımı ilgili anakütleden çekilebilecek tüm örneklemlerin bilgisiyle oluşturulan soyut/teorik bir kavramdır. 
+
+- Çoğu tahminci için belli varsayımlar altında en azından büyük örneklemlerde normal dağılıma uyar. 
+
+---
+# Bootstrap 
+
+- Küçük örneklemlerde ise örnekleme dağılımı normalden sapabilir.  
+
+- İşte bu durumda Bootstrap yöntemi örnekleme dağılımının yaklaştırılmasında çok faydalı olabilir. Standart analize göre daha az varsayıma dayanır ve ayrıca normallik varsayımı gerekmez.  
+
+- Daha önce belirttiğimiz gibi Bootstrap yöntemi aslında mevcut örneklem sanki anakütleymiş gibi yeniden örnekleme yapar. Sonuçta amaç örnekleme dağılımının yaklaşık olarak tahmin edilmesidir. 
+
+- Bootstrap yöntemi özellikle standart hataların ve güven aralıklarının tahmininde yaygın olarak kullanılır.    
+
+---
+# Örnek: Örneklem ortalamasının örnekleme dağılımı
+
+
+```r
+set.seed(12345)
+n &lt;- 10
+x &lt;- rnorm(n, mean=0, sd=1) # anakütle standart normal
+xbar &lt;- mean(x)
+se_xbar &lt;- 1/sqrt(n)  # teorik standart hata
+se_xbar_est &lt;- sqrt(var(x)/n) # örneklem standart hatası
+# Bootstrap standart hatasının bulunması
+# Tek bootstrap örneklemi için: 
+x_boot1 &lt;- sample(x, n, replace = TRUE) # yerine koyarak örnekleme
+x_boot1
+```
+
+```
+##  [1] -0.2761841  0.6300986 -1.8179560  0.5855288 -0.4534972 -0.2761841
+##  [7] -0.9193220 -0.1093033 -0.2841597 -0.4534972
+```
+
+```r
+# boot1 için örneklem ortalaması
+xbar_boot1 &lt;- mean(x_boot1) 
+xbar_boot1
+```
+
+```
+## [1] -0.3374476
+```
+
+---
+class: my-small-font
+# Örnek
+
+.pull-left[
+
+```r
+B &lt;- 500 # Bootstrap yineleme sayısı
+xbar_boot &lt;- numeric(B)
+for (i in 1:B) { 
+  xbar_boot[i] &lt;- mean(sample(x, n, replace = TRUE))
+} 
+sd(xbar_boot) # bootstrap std hatası
+```
+
+```
+## [1] 0.2321545
+```
+
+```r
+1/sqrt(n) # theoretical std error (sigma/sqrt(n)) 
+```
+
+```
+## [1] 0.3162278
+```
+
+```r
+sqrt(var(x)/n) # sample std error 
+```
+
+```
+## [1] 0.2573004
+```
+
+]
+.pull-right[
+
+```r
+hist(xbar_boot)
+```
+
+![](05-Gecerleme_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+]
+
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
@@ -233,6 +353,32 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     deleted = true;
   });
 })();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
 // adds .remark-code-has-line-highlighted class to <pre> parent elements
 // of code chunks containing highlighted lines with class .remark-code-line-highlighted
 (function(d) {
@@ -250,17 +396,6 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   }
   preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
 })(document);</script>
-
-<script>
-(function() {
-  var links = document.getElementsByTagName('a');
-  for (var i = 0; i < links.length; i++) {
-    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
-      links[i].target = '_blank';
-    }
-  }
-})();
-</script>
 
 <script>
 slideshow._releaseMath = function(el) {

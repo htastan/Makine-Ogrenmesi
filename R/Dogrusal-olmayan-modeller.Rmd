@@ -1,0 +1,570 @@
+---
+title: "Doğrusal Olmayan Modeller" 
+subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
+author: 
+  name: "Prof. Dr. Hüseyin Taştan"
+  affiliation: "Yıldız Teknik Üniversitesi"
+date: "Haziran 2021"
+output:
+  html_document: 
+    number_sections: true
+    theme: lumen
+    highlight: haddock 
+    # code_folding: show
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+    keep_md: false
+---
+<style type="text/css"> 
+body{
+  background-color: #FAFAFA;
+  font-size: 18px;
+  line-height: 1.8;
+}
+code.r{
+  font-size: 12pt;
+}
+</style>
+
+```{r setup, include=FALSE}
+# knitr::opts_chunk$set(echo = TRUE, results = 'asis', fig.show = 'asis')
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+``` 
+
+<br/>
+<br/>
+
+
+
+# Polinom regresyonu ve adım fonksiyonu
+
+
+ISLR kütüphanesindeki `Wage` veri setini kullanarak kitaptaki örnekleri çalıştıralım: 
+```{r}
+library(ISLR) 
+head(Wage)
+levels(Wage$education)
+```
+
+Polinom regresyonu için `lm()` fonksiyonu içinde `y ~ poly(x, d)` formülünü 
+kullanabiliriz:
+```{r}
+fit <- lm(wage ~ poly(age, 4), data = Wage)
+coef(summary(fit))
+```
+
+`poly()` fonksiyonu  `age,age^2,age^3,age^4` değişkenlerini otomatik olarak regresyona ekler. 
+`raw = TRUE` opsiyonuyla değişkenleri orijinal değerleriyle de kullanabiliriz: 
+```{r}
+fit2 <- lm(wage ~ poly(age, 4, raw=T), data = Wage)
+coef(summary(fit2))
+```
+
+Bu modelin açıklama gücünü etkilemez ancak katsayı tahminleri değişir.  
+
+Başka bir seçenek `I(x^d)` formülünü kullanmaktır:  
+```{r}
+fit2a <- lm(wage ~ age + I(age^2) + I(age^3) + I(age^4), data = Wage)
+coef(fit2a)
+```
+
+ya da 
+```{r}
+fit2b <- lm(wage ~ cbind(age, age^2, age^3, age^4), data = Wage)
+```
+
+
+`age` için grid değerler kümesi oluşturalım ve kestirimleri hesaplayalım:  
+```{r}
+# set range of age
+agelims <- range(Wage$age)
+age.grid <- seq(from = agelims[1], to = agelims[2])
+# obtain predictions
+preds <- predict(fit, newdata = list(age = age.grid), se = TRUE)
+# confidence bands: 
+se.bands <- cbind(preds$fit+2*preds$se.fit, preds$fit-2*preds$se.fit)
+```
+
+Kitaptaki Şekil 7.1'i çizelim (sol):  
+```{r}
+#par(mfrow=c(1,2), mar=c(4.5,4.5,1,1), oma=c(0,0,4,0))
+plot(Wage$age, Wage$wage, xlim=agelims, cex=.5, col="darkgrey", 
+     xlab = "Age", ylab = "Wage")
+title("Degree-4 Polynomial", outer=T)
+lines(age.grid, preds$fit, lwd=2, col="blue")
+matlines(age.grid, se.bands, lwd=1, col="blue", lty=3)
+```
+
+
+Polinom derecesinin seçiminde klasik ANOVA yaklaşımı: polinom modeller birbirlerinin içinde 
+yuvalanmış parametrelerde doğrusal modellerdir. Bu nedenle standart F testiyle modelleri 
+sınayabiliriz. Bunun için  `anova()` fonksiyonunu kullanabiliriz. 
+```{r}
+fit.1 <- lm(wage ~ age, data=Wage)
+fit.2 <- lm(wage ~ poly(age,2),data=Wage)
+fit.3 <- lm(wage ~ poly(age,3),data=Wage)
+fit.4 <- lm(wage ~ poly(age,4),data=Wage)
+fit.5 <- lm(wage ~ poly(age,5),data=Wage)
+anova(fit.1, fit.2, fit.3, fit.4, fit.5) 
+```
+
+Model 1 (linear) vs. Model 2 (quadratic): p-değeri pratik olarak sıfır (< 2.2e-16). Model 1, Model 2 lehine reddedilir. Doğrusal model uygun değildir.  
+
+Model 2 vs. Model 3: p-value = 0.0017, Model 2 reddedilir.  
+
+Model 3 vs. Model 4: p değeri yaklaşık olarak %5; model 3, model 4 lehine reddedilir. 
+
+Model 4 vs. Model 5: p değeri = 0.37, Model 4 reddedilemez. Kübik ya da kuartik (dördüncü derece) polinom modeli uygun olabilir. 
+```{r}
+coef(summary(fit.5))
+```
+
+
+<br>
+
+Polinom terimli lojistik regresyon modeli: 
+```{r}
+fit <- glm( I(wage>250) ~ poly(age, 4), data=Wage, family=binomial)
+preds <- predict(fit, newdata=list(age=age.grid), se=T)
+
+# obtain standard error bands 
+pfit <- exp(preds$fit)/(1+exp(preds$fit))
+se.bands.logit <- cbind(preds$fit+2*preds$se.fit, preds$fit-2*preds$se.fit)
+se.bands <- exp(se.bands.logit)/(1+exp(se.bands.logit))
+```
+
+Şekil 7.1 (sağ panel): 
+```{r}
+plot(Wage$age, I(Wage$wage>250), xlim=agelims, type="n", ylim=c(0,.2), 
+     xlab = "Age", ylab = "Pr(wage>250)")
+points(jitter(Wage$age), I((Wage$wage>250)/5),cex=.5,pch="|",col="darkgrey")
+lines(age.grid,pfit,lwd=2, col="blue")
+matlines(age.grid,se.bands,lwd=1,col="blue",lty=3)
+```
+
+Yukarıdaki kodda `jitter()` fonksiyonu `age` değerlerinin üst üste çakışmasını engeller. Böylece şekil daha kolay okunur.
+
+Şekil 7.1'in her iki panelinin birlikte çizimi: 
+```{r}
+par(mfrow=c(1,2), mar=c(4.5,4.5,1,1), oma=c(0,0,4,0))
+plot(Wage$age, Wage$wage, xlim=agelims, cex=.5, col="darkgrey", 
+     xlab = "Age", ylab = "Wage")
+title("Degree-4 Polynomial", outer=T)
+lines(age.grid, preds$fit, lwd=2, col="blue")
+matlines(age.grid, se.bands, lwd=1, col="blue", lty=3)
+
+plot(Wage$age, I(Wage$wage>250), xlim=agelims, type="n", ylim=c(0,.2), 
+     xlab = "Age", ylab = "Pr(wage>250)")
+points(jitter(Wage$age), I((Wage$wage>250)/5),cex=.5,pch="|",col="darkgrey")
+lines(age.grid,pfit,lwd=2, col="blue")
+matlines(age.grid,se.bands,lwd=1,col="blue",lty=3)
+```
+
+Adım fonksiyonunda kullanmak için `cut()` fonksiyonu ile sürekli bir değişkeni kategorik değişkene dönüştürebiliriz. Örneğin, 
+```{r}
+table(cut(Wage$age, 4))
+```
+
+OLS regresyonu içinde doğrudan kullanabiliriz: 
+```{r}
+fit <- lm(wage ~ cut(age, 4), data = Wage)
+coef(summary(fit))
+```
+
+
+# Spline Regresyonu 
+
+`R`'da `{splines}` kütüphanesini kullanarak spline regresyonu kurabiliriz. Baz fonksiyonlarının oluşturulmasında `bs()` fonksiyonu kullanılabilir (default = cubic). Örneğin, 
+
+```{r}
+library(splines)
+fit <- lm(wage ~ bs(age, knots=c(25,40,60)), data=Wage)
+pred <- predict(fit, newdata=list(age=age.grid), se=T)
+plot(Wage$age, Wage$wage, col="gray", 
+     xlab = "Age", ylab = "Wage")
+lines(age.grid, pred$fit, lwd=2)
+lines(age.grid, pred$fit+2*pred$se, lty="dashed")
+lines(age.grid, pred$fit-2*pred$se, lty="dashed")
+abline(v=c(25,40,60), lty=2, col="darkgreen")
+```
+
+Düğüm noktaları: age = 25, 40, 60. Toplamda 6 baz fonksiyonu oluşturuldu. 3 düğüm noktalı bir kübik spline toplamda 7 serbestlik derecesine sahiptir (=3+3+1).
+
+Alternatif olarak `df()` fonksiyonu ile uniform aralıklar kullanarak düğüm noktalarını belirleyebiliriz.
+
+```{r}
+dim(bs(Wage$age, knots=c(25,40,60)))
+```
+
+```{r}
+dim(bs(Wage$age, df=6))
+```
+
+```{r}
+attr(bs(Wage$age, df=6), "knots")
+```
+
+Burada `R` düğüm noktalarını 33.8, 42.0, ve 51.0 değerlerinde oluşturdu. Bu değerler, sırasıyla, 25, 50 ve 75nci yüzdelik dilimlerdir (1,2,3. kartiller). 
+
+## Doğal Spline'lar 
+
+Bu amaçla `splines::ns()` fonksiyonu kullanılabilir. Örneğin 
+```{r}
+fit2 <- lm(wage ~ ns(age, df=4), data=Wage)
+pred2 <- predict(fit2, newdata=list(age=age.grid), se=T)
+plot(Wage$age, Wage$wage, col="grey", 
+     xlab = "Age", ylab = "Wage")
+lines(age.grid, pred2$fit, col="red",lwd=2) 
+```
+
+## Smoothing Splines
+
+Bunun için  `stats::smooth.spline()` fonksiyonu kullanılabilir: 
+```{r} 
+plot(Wage$age, Wage$wage, xlim = agelims, cex = 0.5, col="darkgrey", 
+     xlab = "Age", ylab = "Wage")
+title(" Smoothing Spline ")
+# fit a smoothing spline with degree 16
+fit <- smooth.spline(Wage$age, Wage$wage, df = 16)
+# chose df using cross-validation
+fit2 <- smooth.spline(Wage$age, Wage$wage, cv = TRUE)
+# cv yields df=6.8
+fit2$df
+lines(fit, col="red",lwd=2)
+lines(fit2, col="blue",lwd=2)
+legend("topright",legend=c("16 DF","6.8 DF"),col=c("red","blue"),lty=1,lwd=2,cex=.8)
+```
+
+## Örnek: simülasyon verileriyle spline regresyonu
+
+Önce veri setimizi oluşturalım: 
+```{r}
+# simulate data
+set.seed(12345)
+n  <- 100
+x  <- seq(0,1,length=n)
+fx <- 5*x*sin(2*pi*x) + 4*cos(3*pi*x)
+y  <- rnorm(n,fx,1)
+data = data.frame(y,x)
+```
+
+Verilerin grafiği: 
+```{r}
+library(ggplot2)
+p1 <- ggplot(data,aes(x,y)) +
+       geom_point() 
+  
+p1 + geom_line(aes(x,fx,col="Truth")) +
+  scale_colour_manual(" ", values=c("Truth"="black")) 
+```
+
+İki düğüm noktası tanımlayalım:  
+```{r}
+# we have  knots 
+k1 <- 0.33
+k2 <- 0.62 
+p1 + geom_line(aes(x,fx,col="Truth")) +
+     scale_colour_manual(" ", values=c("Truth"="black")) +
+     geom_vline(xintercept=c(k1,k2), 
+                linetype="dotted", color = "blue", size=1)
+```
+
+
+```{r}
+data$k1dummy <- ifelse(data$x>k1,1,0)
+data$k1diff <- data$x - k1
+data$xk1 <- data$k1diff*data$k1dummy
+#
+data$k2dummy <- ifelse(data$x>k2,1,0)
+data$k2diff <- data$x - k2
+data$xk2 <- data$k2diff*data$k2dummy
+```
+
+
+```{r}
+ggplot(data, aes(x,xk1)) +
+  geom_line() +
+  geom_line(aes(x,xk2,col="red")) +
+  theme(legend.position = "none")
+```
+
+`bs()` fonksiyonu ile görselleştirme: 
+```{r}
+library(splines)
+B = bs(x,knots=c(k1,k2),degre=1)
+matplot(x,B,type="l",lty=1,lwd=2)
+```
+
+İkinci derece spline: 
+```{r}
+B = bs(x,knots=c(k1,k2),degre=2)
+matplot(x,B,type="l",lty=1,lwd=2)
+```
+
+Kübik spline: 
+```{r}
+B = bs(x,knots=c(k1,k2),degre=3)
+matplot(x,B,type="l",lty=1,lwd=2)
+```
+
+Spline regresyonları OLS ile kolayca tahmin edilebilir: 
+```{r}
+# least squares estimation 
+model1  <- lm(y ~ x + xk1 +xk2, data=data)
+summary(model1)
+yhat <- model1$fitted.values
+
+p1 + geom_line(aes(x,fx,col="Truth")) + 
+  geom_line(aes(x,yhat,col="Linear spline")) +
+  scale_colour_manual(" ", values=c("Truth"="black","Linear spline"="red")) +
+  geom_vline(xintercept=c(k1,k2), 
+                linetype="dotted", color = "blue", size=1)
+```
+
+<br>
+**Soru**  `k1` noktasında sadece bir düğüm noktası ve doğrusal spline kullansaydık nasıl bir tahmin elde ederdik? 
+<br>
+
+**Cevap**
+```{r}
+# least squares estimation 
+model1.a  <- lm(y ~ x + xk1, data=data)
+summary(model1.a)
+yhat.a <- model1.a$fitted.values
+
+p1 + geom_line(aes(x,fx,col="Truth")) + 
+  geom_line(aes(x,yhat.a,col="Linear spline")) +
+  scale_colour_manual(" ", values=c("Truth"="black","Linear spline"="red")) 
+```
+
+
+`{splines}` paketi ile: 
+```{r}
+library(splines)
+model1.bs <- lm(y ~ bs(x, knots = c(k1,k2), degree=1), data=data) 
+summary(model1.bs)
+yhat.bs <- model1.bs$fitted.values
+# compare predictions
+plot(yhat, yhat.bs)
+sum(yhat-yhat.bs)
+```
+
+İkinci derece spline: 
+```{r}
+# quadratic fit
+model2.bs <- lm(y ~ bs(x, knots = c(k1,k2), degree=2), data=data) 
+summary(model2.bs)
+yhat2.bs <- model2.bs$fitted.values
+
+p1 + geom_line(aes(x,fx,col="Truth")) + 
+     geom_line(aes(x,yhat.bs,col="Linear spline")) +
+     geom_line(aes(x,yhat2.bs,col="Quadratic spline")) +
+     scale_colour_manual(" ", values=c("Truth"="black", 
+                                       "Linear spline"="red", 
+                                       "Quadratic spline"="blue")) +
+     theme(legend.position = "right")
+```
+
+Kübik spline: 
+```{r}
+# Cubic spline fit
+model3.bs <- lm(y ~ bs(x, knots = c(k1,k2), degree=3), data=data) 
+summary(model3.bs)
+yhat3.bs <- model3.bs$fitted.values
+
+p1 + geom_line(aes(x,fx,col="Truth")) +
+     geom_line(aes(x,yhat.bs,col="Linear spline")) +
+     geom_line(aes(x,yhat2.bs,col="Quadratic spline")) +
+     geom_line(aes(x,yhat3.bs,col="Cubic spline")) +
+     scale_colour_manual(" ", values=c("Truth"="black", 
+                                       "Linear spline"="red", 
+                                       "Quadratic spline"="blue", 
+                                       "Cubic spline"="darkgreen")) +
+  theme(legend.position = "right")
+```
+
+Alternatif: serbestlik derecesini (df) belirle, düğüm noktaları otomatik olarak oluşturulacak: 
+```{r}
+modeldf10  <- lm(y ~ bs(x, 10), data=data)
+yhatdf10.bs <- modeldf10$fitted.values
+summary(modeldf10)
+
+p1 + geom_line(aes(x,fx,col="Truth")) + 
+  geom_line(aes(x,yhatdf10.bs,col="df=10 spline")) +
+  scale_colour_manual(" ", values=c("Truth"="black","df=10 spline"="red")) 
+```
+
+
+Smoothing spline df=10: 
+```{r}
+ssfit <- smooth.spline(x, y, df = 10)
+p1 + geom_line(aes(x,fx,col="Truth")) +
+     geom_line(aes(x,ssfit$y,col="Smooth spline df=10")) +
+  scale_colour_manual(" ", values=c("Truth"="black","Smooth spline df=10"="red")) 
+```
+
+Çapraz geçerleme ile df'in seçimi: 
+```{r}
+ssfitcv <- smooth.spline(x, y, cv=TRUE)
+ssfitcv$df
+
+p1 + geom_line(aes(x,fx,col="Truth")) +
+  geom_line(aes(x,ssfit$y,col="Smooth spline df=10")) +
+  geom_line(aes(x,ssfitcv$y,col="Smooth spline df=8.85")) +
+  scale_colour_manual(" ", values=c("Truth"="black",
+                                    "Smooth spline df=10"="red",
+                                    "Smooth spline df=8.85"="blue")) 
+
+```
+
+ 
+<br>
+
+# Yerel Regresyon 
+
+Bu amaçla  `stats::loess()` fonksiyonu kullanılabilir. Detaylar için bkz. `?loess`. 
+(loess: locally estimated scatterplot smoothing ya da LOcal regrESSion, aka lowess: 
+locally weighted scatterplot smoothing). 
+
+```{r}
+plot(Wage$age, Wage$wage, xlim = agelims, cex = 0.5, col="darkgrey", 
+     xlab = "Age", ylab = "Wage")
+title("Local Regression")
+fit <- loess(wage ~ age, span=0.2, data=Wage)
+fit2 <- loess(wage ~ age, span=0.5, data=Wage)
+lines(age.grid, predict(fit, data.frame(age=age.grid)), col="red", lwd=2)
+lines(age.grid, predict(fit2, data.frame(age=age.grid)), col="blue", lwd=2)
+legend("topright", legend=c("Span=0.2","Span=0.5"), 
+       col=c("red","blue"), lty=1, lwd=2, cex=.8)
+```
+
+Yerel regresyonda tahminde kullanılan yerel verileri `span` değeri belirler. Yukarıda iki değer kullanılmıştır: 0.2 ve 0.5, sırasıyla verilerin %20'si ve %50'si dahil edilmiştir. Span değeri büyüdükçe tahmin edilen eğri düzleşir. Yerel regresyonun tahmininde alternatif olarak `{locfit}` kütüphanesi de kullanılabilir. 
+
+
+**Örnek**: Simülasyon verileri ile yerel regresyon: 
+```{r}
+library(tidyverse)
+data_fit <- loess(y ~ x, span = 0.1, data = data)
+y_hat <- predict(data_fit, data$x)
+data_fit2 <- loess(y ~ x, span = 0.3, data = data)
+y_hat2 <- predict(data_fit2, data$x)
+df <- tibble(y = data$y, 
+             x = data$x, 
+             pred = y_hat,
+             pred2 = y_hat2)
+head(df)
+```
+```{r}
+ggplot(df, aes(x,y)) + geom_point() + 
+  geom_line(aes(x,fx,col="Truth")) +
+  geom_line(aes(x,pred, col="Span=0.1")) + 
+  geom_line(aes(x,pred2, col="Span=0.3"))
+```
+
+`ggplot2::geom_smooth()` ile LOESS: 
+```{r}
+ggplot(data, aes(x,y)) + 
+  geom_point() + 
+  geom_line(aes(x,fx,col="Truth")) +
+  geom_smooth(method = "loess", span=0.1, se = FALSE, aes(col="span=0.1")) + 
+  geom_smooth(method = "loess", span=0.3, se = FALSE, aes(col="span=0.3"))
+```
+
+
+# Generalized Additive Models (GAMs)
+
+Bir GAM modeli `lm()` fonksiyonu yardımıyla tahmin edilebilir. Örneğin 
+```{r}
+gam1 <- lm(wage ~ ns(year,4) + ns(age,5) + education, data=Wage)
+summary(gam1)
+```
+
+Ancak smoothing splines için  `lm()` fonksiyonu kullanılamaz. Bunun için `gam` kütüphanesini yükleyip kullanabiliriz: 
+
+```{r}
+library(gam)
+gam.m3 <- gam(wage ~ s(year,4) + s(age,5) + education, data=Wage)
+```
+
+`gam::s()`: smoothing spline. Yukarıdaki koda göre year için df = 4, age için df=5 olarak belirlenmiştir. Education nitel bir değişken olduğundan bir dönüştürme yapılmadan kullanılmıştır (kukla değişken).
+
+Tahmin edilen fonksiyonların görselleştirilmesi:  
+```{r}
+par(mfrow=c(1,3))
+plot(gam.m3, se=TRUE,col="blue")
+```
+
+```{r}
+plot.Gam(gam1 , se=TRUE , col ="red ")
+```
+
+Tahmin sonrası  `anova()` testleri:  
+
+m1: GAM excludes year
+m2: GAM uses a linear function of year 
+m3: GAM uses a spline function of year (estimated previously) 
+```{r}
+gam.m1 <- gam(wage ~ s(age,5) + education, data=Wage)
+gam.m2 <- gam(wage ~ year + s(age,5) + education, data=Wage)
+anova(gam.m1, gam.m2, gam.m3, test="F") 
+```
+
+Sonuçlara göre  m2 m1'e tercih edilir, yani year değişkeninin olduğu model daha iyidir. Ancak m2 vs m3 karşılaştırmasında m2 tercih edilir. Doğrusal olmayan dönüştürmeye gerek yoktur.  
+
+Tahmin edilen modelin özeti: `summary()` fonksiyonu 
+```{r}
+summary(gam.m3)
+```
+
+`Anova for Nonparametric Effects` başlığı altındaki F testleri ve p-değerleri doğrusal ve 
+doğrusal olmayan modelleri karşılaştırır. Year değişkeni için doğrusal model tercih edilir çünkü 
+p-değeri (0.35) büyüktür. Age için ise boş hipotez reddedilir ve doğrusal olmayan model tercih edilir.  
+
+Kestirimlerin oluşturulması: 
+```{r}
+preds <- predict(gam.m2, newdata=Wage)
+```
+
+GAM içinde `lo()` fonksiyonu ile LOESS düzleştirmesi de yapılabilir: 
+```{r}
+gam.lo <- gam(wage ~ s(year, df = 4) + lo(age, span = 0.7) + education, data = Wage)
+plot.Gam(gam.lo, se = TRUE, col = "green")
+```
+
+`lo()` fonksiyonu kullanılarak etkileşim terimleri de eklenebilir. Örneğin, 
+```{r}
+gam.lo.i <- gam(wage ~ lo(year, age, span = 0.5) + education, data = Wage)
+```
+
+
+## GAM ile Lojistik Regresyon 
+
+GAM fonksiyonu içinde `family=binomial` opsiyonu ile tahmin edilebilir: 
+```{r}
+gam.lr <- gam(I(wage > 250) ~ year + s(age, df = 5) + education, 
+              family = binomial, 
+              data = Wage)
+par(mfrow = c(1, 3))
+plot(gam.lr, se = T, col = "green")
+```
+
+"<HS" kategorisinde hiç veri olmadığı için oldukça geniş bir güven aralığına sahip: 
+```{r}
+table(Wage$education, I(Wage$wage > 250))
+```
+
+Bu kategoriyi dışlayarak tekrar tahmin edelim:  
+```{r}
+gam.lr.s <- gam(I(wage > 250) ~ year + s(age, df = 5) + education, 
+                family = binomial, 
+                data = Wage, 
+                subset = (education != "1. < HS Grad"))
+plot(gam.lr.s, se = T, col = "green")
+```
+
+
+
+<br>
+<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 0;"></div>
+

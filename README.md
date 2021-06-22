@@ -1,6 +1,6 @@
 # Makine Öğrenmesi 
 
-İktisatçılar için Makine Öğrenmesi yaz okulu - Türkiye Ekonomi Kurumu Yaz Seminerleri 2020
+İktisatçılar için Makine Öğrenmesi yaz okulu - Türkiye Ekonomi Kurumu Yaz Seminerleri 2021
 
 
 ## Ders Planı 
@@ -36,13 +36,18 @@
 
     * Uygulama: [html](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/R/Duzenlilestirme.html)  | [R Markdown](R/Duzenlilestirme.Rmd)  
 
-7. **Ağaç Bazlı Yöntemler**: 
-    * Ders notları: [html](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/Sunumlar/07-Agac-bazli-yontemler.html) | [pdf](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/Sunumlar/07-Agac-bazli-yontemler.pdf) 
+7. **Doğrusal Olmayan Modeller**: 
+    * Ders notları: [html](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/Sunumlar/07-Dogrusal-olmayan-modeller.html) | [pdf](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/Sunumlar/07-Dogrusal-olmayan-modeller.pdf) 
+
+    * Uygulama: [html](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/R/Dogrusal-olmayan-modeller.html)  | [R Markdown](R/Dogrusal-olmayan-modeller.Rmd)  
+    
+8. **Ağaç Bazlı Yöntemler**: 
+    * Ders notları: [html](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/Sunumlar/08-Agac-bazli-yontemler.html) | [pdf](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/Sunumlar/08-Agac-bazli-yontemler.pdf) 
 
     * Uygulama: [html](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/R/Agaclar.html)  | [R Markdown](R/Agaclar.Rmd)  
 
-8. **Gözetimsiz Öğrenme**: 
-    * Ders notları: [html](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/Sunumlar/08-Gozetimsiz-Ogrenme.html) | [pdf](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/Sunumlar/08-Gozetimsiz-Ogrenme.pdf) 
+9. **Gözetimsiz Öğrenme**: 
+    * Ders notları: [html](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/Sunumlar/09-Gozetimsiz-Ogrenme.html) | [pdf](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/Sunumlar/09-Gozetimsiz-Ogrenme.pdf) 
 
     * Uygulama: [html](https://raw.githack.com/htastan/Makine-Ogrenmesi/master/R/Gozetimsiz-ogrenme.html)  | [R Markdown](R/Gozetimsiz-ogrenme.Rmd) 
 

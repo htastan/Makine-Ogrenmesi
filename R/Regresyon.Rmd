@@ -1,25 +1,26 @@
 ---
-title: "Regresyon Analizi"
-author: "Prof. Dr. Hüseyin Taştan"
-date: "Ağustos 2020"
+title: "Gözetimli Öğrenme: Regresyon Problemleri"
+subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
+author: 
+  name: "Prof. Dr. Hüseyin Taştan"
+  affiliation: "Yıldız Teknik Üniversitesi"
+date: "Haziran 2021"
 output:
   html_document: 
     number_sections: true
-    theme: readable
+    theme: lumen
     highlight: haddock 
     # code_folding: show
     toc: yes
     toc_depth: 3
     toc_float: yes
-    keep_md: true
-subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2020)
-institute: Yıldız Teknik Üniversitesi
-
-
+    keep_md: false
 ---
 <style type="text/css"> 
 body{
-  font-size: 12pt;
+  background-color: #FAFAFA;
+  font-size: 18px;
+  line-height: 1.8;
 }
 code.r{
   font-size: 12pt;
@@ -28,11 +29,12 @@ code.r{
 
 ```{r setup, include=FALSE}
 # knitr::opts_chunk$set(echo = TRUE, results = 'asis', fig.show = 'asis')
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ``` 
 
 <br/>
 <br/>
+
 
 # R ile Regresyon analizi
 
@@ -41,7 +43,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## `lm()` fonksiyonu
 
 Base R ile birlikte gelen `lm()` fonksiyonu ile regresyon modellerini tahmin edebilir ve kestirimleri hesaplayabiliriz. Örnek olarak ders kitabında incelediğimiz Boston ev fiyatları veri setini yükleyelim: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 library(MASS)
 library(ISLR)
 library(tidyverse)
@@ -55,12 +57,12 @@ names(Boston)
 
 <br>
 
-Medyan ev fiyatlarının (medv, 1000\$) düşük gelir (lstat) üzerine basit regresyonunu kuralım: 
+Medyan ev fiyatlarının (`medv`, 1000\$) düşük gelir (`lstat`) üzerine basit regresyonunu kuralım: 
 ```{r}
 reg1 <- lm(formula = medv ~ lstat, data=Boston) 
 ```
 
-`R` regresyon çıktılarının yer aldığı `reg1` isimli bir liste oluşturdu. RStudio-Environment altında `reg1` nesnesine tıklayarak bu listenin içinde nelerin yer altığını görebilirsiniz:
+`R` regresyon çıktılarının yer aldığı `reg1` isimli bir liste oluşturdu. RStudio-Environment altında `reg1` nesnesine tıklayarak bu listenin içindekileri görebilirsiniz:
 ```{r}
 names(reg1)
 ```
@@ -73,7 +75,7 @@ Regresyon çıktısının bir özetini görmek için:
 summary(reg1)
 ```
 
-`reg1` listesi içinde yer alan bileşenlere ayrı ayrı ulaşılabilir. Örneğin, katsayıları görmek için 
+`reg1` listesi içinde yer alan bileşenlere ayrı ayrı ulaşılabilir. Örneğin, katsayıları ekrana yazmak için 
 ```{r}
 coef(reg1)
 ```
@@ -89,7 +91,7 @@ Denklem formunda yazalım:
 $$\widehat{medv} = 34.55 - 0.950~lstat$$
 
 
-Regresyon sonuçlarını tablolaştırmak için çok sayıda araç geliştirilmiştir. Örneğin, `broom` paketinde yer alan `tidy()`, `glance()` ve `augment()` fonksiyonlarını kullanabilirsiniz:  
+Regresyon sonuçlarını özetlemek için çok sayıda alternatif araç geliştirilmiştir. Örneğin, `broom` paketinde yer alan `tidy()`, `glance()` ve `augment()` fonksiyonlarını kullanabilirsiniz:  
 ```{r, warning=FALSE}
 library(broom)
 tidy(reg1)
@@ -114,14 +116,14 @@ confint(reg1)
 ```
 
 
-Verilmiş bir $x$ değerleri için (örneğimizde lstat=(5,10,15)) ortalama değer kestirimi: 
-```{r, echo=TRUE, results="hold"}
+Verilmiş bir $x$ değerleri için (örneğimizde `lstat`=(5,10,15)) ortalama değer kestirimi: 
+```{r}
 # reg1 modeliyle kestirimler 
 predict(reg1, data.frame(lstat=(c(5,10,15))), interval="confidence")
 ```
 
 Bir gözlem için kestirimler:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 # predictions from the model reg1 
 # for a single observation
 predict(reg1, data.frame(lstat=(c(5,10,15))), interval="prediction")
@@ -130,15 +132,13 @@ predict(reg1, data.frame(lstat=(c(5,10,15))), interval="prediction")
 Dikkat edilirse kestirimler hem ortalama için hem de tek bir gözlem için aynıdır. Ancak tekil gözlem kestirimlerinin standart hatası, ortalama kestiriminin standart hatasına göre çok daha yüksektir. Bu nedenle güven aralığı daha geniştir. 
 
 Örneklem-içi uyum değerlerinin (fitted values) grafiği  
-```{r, echo=TRUE, results="hold"}
+```{r}
 plot(Boston$lstat, Boston$medv) 
 abline(reg1,lwd=3)
 ```
 
 Alternatif olarak: 
-```{r, echo=TRUE, results="hold"}
-# create a new data frame and call it Boston1
-# I don't want to modify the original data set
+```{r}
 Boston1 <- Boston
 Boston1$yhat1 <- predict(reg1, Boston1)
 
@@ -149,7 +149,7 @@ Boston1 %>% ggplot(aes(lstat, medv)) +
 ```
 
 Ya da `broom` paketini kullanarak: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 augment(reg1) %>% 
   ggplot(mapping = aes(x = lstat)) +
   geom_point(mapping = aes(y = medv)) +
@@ -157,7 +157,7 @@ augment(reg1) %>%
 ```  
 
 Bu grafiklerden de görüldüğü gibi bu iki değişken arasında doğrusal olmayan bir ilişki mevcuttur. Tahmin edilen regresyon modeli bu ilişkiyi tam  yakalayamıyor. Bunu daha net görmek için kalıntıları oluşturup örneklem-içi tahmin edilen değerlere göre grafiğini çizelim: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 # Residuals vs Fitted values plot
 Boston1$resid1 <- residuals(reg1)
 
@@ -171,7 +171,7 @@ Eğer iyi bir uyum olsaydı kalıntıların $0$ çevresinde rassal bir şekilde 
 <br>
 
 `lm()` tahmininden sonra regresyondaki problemlerin teşhisi için bazı diagnostik grafikler çizilebilir: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 par(mfrow=c(2,2))
 plot(reg1)
 ```
@@ -186,7 +186,7 @@ Dördüncü (alt sağ) grafik yüksek etkili gözlemlerin (influential observati
 
 <br>
 **Örnek**: Simülasyonla bir veri seti türeterek regresyon modeli tahmin edelim ve tanısal grafikleri çizelim. 
-```{r, echo=TRUE, results="hold"}
+```{r}
 set.seed(1) # aynı sonuçları elde etmek için 
 n   <- 200
 x1  <- rnorm(n, mean=0, sd=1) 
@@ -199,7 +199,7 @@ plot(reg_df1)
 ```
 
 `ggplot` ile alternatif tanısal grafikler: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 # lindia paketi yüklenmeli 
 library(lindia)
 reg_df1 %>% gg_diagnose(plot.all=TRUE)
@@ -229,7 +229,7 @@ summary(reg4)
 ```
 
 Bu model için diagnostik grafikler:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 par(mfrow=c(2,2))
 plot(reg4)
 ```
@@ -245,7 +245,7 @@ summary(reg5)
 ```
 
 Alternatif olarak: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 reg6 <- lm(medv ~ lstat + age + lstat:age, data = Boston)
 summary(reg6)
 ```
@@ -253,27 +253,27 @@ summary(reg6)
 ## Doğrusal olmayan dönüştürmeler 
 
 Modele değişkenlerin logaritma, kare, küp, ters, kare kök vb doğrusal olmayan dönüştürmelerini eklemek çok kolaydır. Örneğin,  
-```{r, echo=TRUE, results="hold"}
+```{r}
 reg7 <- lm(medv ~ lstat + I(lstat^2), data = Boston)
 summary(reg7)
 ```
 
 Karesel terim istatistik bakımından anlamlıdır. Karesel modeli doğrusal modelle karşılaştırmak için `anova` fonksiyonunu kullanabiliriz:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 anova(reg1, reg7)
 ```
 
 `reg1` modeli `reg7` modeli içinde yuvalanmıştır (nested). Yukarıdaki ANOVA tablosu ile standart F testi yapmış olduk. Sonuca göre ikinci model (reg7) tercih edilir. 
 
 Bu modelin kalıntılarını tekrar inceleyelim:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 par(mfrow=c(2,2))
 plot(reg7)
 ```
 
 
 Yüksek dereceden polinom terimlerini modele eklemek için `poly()` fonksiyonunu kullanabiliriz. Örneğin, `lstat` değişkeninin 5. dereceden polinomu: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 reg8 <- lm(medv ~ poly(lstat,5), data = Boston)
 summary(reg8)
 ```
@@ -289,14 +289,14 @@ summary(fit1)
 ```
 
 `ShelveLoc` ürünün mağazada raflardaki yerinin kalitesine ilişkin bir kategorik değişkendir. Kötü, orta, ve iyi olmak üzere (bad, medium, good) 3 gruba sahiptir. Eğer bir faktör değişkeni olarak tanımlanmışsa, R otomatik olarak kukla değişkenleri yaratır ve modele ekler. Gruplardan biri baz grup olarak seçilir (modelden dışlanır). 
-```{r, echo=TRUE, results="hold"}
+```{r}
 contrasts(Carseats$ShelveLoc)
 ```
 
 # Eğitim ve Test Verilerinde Performans Karşılaştırması
 
 Boston veri setini kullanarak doğrusal ve karesel modellerin kestirim performanslarını karşılaştıralım. Öncelikle verileri rassal olarak eğitim (training) ve test olmak üzere iki parçaya ayırmamız gerekir. Bu amaçla `sample()` fonksiyonunu kullanabiliriz:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 set.seed(1)
 train <- sample(506, 253)
 ```
@@ -304,19 +304,19 @@ train <- sample(506, 253)
 Her seferinde aynı sonucu elde etmek için en başta `set.seed()` komutunu da çalıştırmamız gerekir. Aksi takdirde sonuçlar farklılaşacaktır. Veri setinde $n=506$ gözlem vardır. Bunun yarısı rassal olarak modelin eğitiminde diğer yarısı ise performans karşılaştırmasında kullanılacaktır. 
 
 Yukarıda `train` vektörü eğitim setine seçilen gözlemlerin sıra numaralarını içermektedir. Veri setlerini açık olarak belirlemek için: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 train_Boston <- Boston[train,]
 test_Boston <- Boston[-train,]
 ```
 
 Burada `-train` eğitim veri setinde olmayan gözlemleri seçer. Şimdi eğitim veri setiyle modelleri tahmin edebiliriz:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 lfit <- lm(medv ~ lstat, data = train_Boston)
 qfit <- lm(medv ~ lstat + I(lstat^2), data = train_Boston) 
 ```
 
 Şimdi kestirimleri sadece test verileriyle yaparak her iki model için Ortalama Hata Karesini (Mean Squared Error - MSE) hesaplayalım: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 lin_predict <- predict(lfit, test_Boston)
 lin_error <- test_Boston$medv - lin_predict
 MSE_lfit <- mean(lin_error^2)
@@ -324,7 +324,7 @@ MSE_lfit
 ```
 
 Benzer şekilde karesel model için: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 qu_predict <- predict(qfit, test_Boston)
 qu_error <- test_Boston$medv - qu_predict
 MSE_qfit <- mean(qu_error^2)
@@ -337,7 +337,7 @@ Bu sonuçlara göre karesel modelin kestirim performansı daha iyidir.
 
 Modelin karmaşıklığı arttıkça sapmanın azaldığını ancak varyansın yükseldiğini biliyoruz. Test kestirim performansı da varyanstaki artışa bağlı olarak kötüleşiyordu. Bunu nümerik olarak göstermek için bir simülasyon deneyi tasarlayalım. Bu deneyde gerçek modeli biliyoruz. Ancak bilmediğimizi farzederek farklı karmaşıklık düzeylerine sahip modeller ile kestirim yapıyoruz. 
 Gerçek modelimiz 3. derece bir polinomdur: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 set.seed(1) # for replication
 n   <- 100
 x1  <- runif(n,-2,5)
@@ -352,7 +352,7 @@ df %>% ggplot(aes(x=x1,y=y))+
 ```
 
 Eğitim ve test verilerini belirleyelim:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 set.seed(1)
 train_df <- sample(n,n/2)
 # train_df gözlem numaralarıdır 
@@ -361,7 +361,7 @@ test_data <- df[-train_df,]
 ```
 
 6. dereceye kadar polinom regresyonları tahmin ediyoruz ve MSE değerlerini hesaplıyoruz:   
-```{r, echo=TRUE, results="hold"}
+```{r}
 maxd = 6
 trMSE = rep(0,maxd)
 teMSE = rep(0,maxd)
@@ -374,7 +374,7 @@ for (i in 1:maxd) {
 ```
 
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 MSE <- tibble(model=rep(1:maxd,2), 
               MSEsubset=rep(c("train","test"), each = maxd), 
               MSE=c(trMSE,teMSE))
@@ -382,10 +382,16 @@ MSE
 ```
 
 MSE grafiği:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 MSE %>% ggplot(aes(model,MSE, color=MSEsubset))+
   geom_point() + 
   geom_line() 
 ```
 
 Grafikten görüldüğü gibi, model karmaşıklığı arttıkça eğitim MSE azalmaya devam ediyor. Diğer taraftan test MSE ise 3. derecede en küçük değerini alıyor ve daha sonra artmaya başlıyor.
+
+
+<br>
+<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 0;"></div>
+
+

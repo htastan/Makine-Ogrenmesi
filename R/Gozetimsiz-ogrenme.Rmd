@@ -1,25 +1,26 @@
 ---
 title: "Gözetimsiz Öğrenme"
-author: "Prof. Dr. Hüseyin Taştan"
-date: "Ağustos 2020"
+subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
+author: 
+  name: "Prof. Dr. Hüseyin Taştan"
+  affiliation: "Yıldız Teknik Üniversitesi"
+date: "Haziran 2021"
 output:
   html_document: 
     number_sections: true
-    theme: readable
+    theme: lumen
     highlight: haddock 
     # code_folding: show
     toc: yes
     toc_depth: 3
     toc_float: yes
-    keep_md: true
-subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2020)
-institute: Yıldız Teknik Üniversitesi
-
-
+    keep_md: false
 ---
 <style type="text/css"> 
 body{
-  font-size: 12pt;
+  background-color: #FAFAFA;
+  font-size: 18px;
+  line-height: 1.8;
 }
 code.r{
   font-size: 12pt;
@@ -28,11 +29,12 @@ code.r{
 
 ```{r setup, include=FALSE}
 # knitr::opts_chunk$set(echo = TRUE, results = 'asis', fig.show = 'asis')
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ``` 
 
 <br/>
 <br/>
+
 
 
 # Temel Bileşenler
@@ -40,7 +42,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Örnek: USArrests 
 
 Örnek olarak ders kitabındaki (James vd, ISLR) örneğin replikasyonunu yapacağız. Bu örnek base `R`'ın bir parçası olan `USArrests`  veri kümesini kullanmaktadır. 
-```{r, echo=TRUE, results="hold", warning=FALSE} 
+```{r, warning=FALSE} 
 library(ISLR)
 states <- row.names(USArrests) 
 names(USArrests)
@@ -68,7 +70,7 @@ names(pr.out)
 pr.out$center
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 pr.out$scale
 ```
 
@@ -78,7 +80,7 @@ pr.out$rotation
 ```
 
 `x` temel bileşen skor vektörlerini içeren bir matristir: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 dim(pr.out$x)  
 head(pr.out$x)
 ```
@@ -107,7 +109,7 @@ Screeplot:
 screeplot(pr.out, type="lines") 
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 pr.out$sdev
 pr.var <- pr.out$sdev^2
 pr.var
@@ -116,6 +118,7 @@ pve
 plot(pve, xlab="Principal Component", ylab="Proportion of Variance Explained", ylim=c(0,1),type='b')
 plot(cumsum(pve), xlab="Principal Component", ylab="Cumulative Proportion of Variance Explained", ylim=c(0,1),type='b')
 ```
+
 ## Örnek: Body Data 
 
 Vücut ölçümleri veri seti (detaylar için bkz. [http://users.stat.umn.edu/~sandy/courses/8053/Data/Bodymeasurements/datasets.heinz.html](http://users.stat.umn.edu/~sandy/courses/8053/Data/Bodymeasurements/datasets.heinz.html)): 
@@ -142,7 +145,7 @@ pr.out$x <- -pr.out$x
 biplot(pr.out, scale=0, cex=0.6)
 ```
 
-```{r, echo=TRUE, results="hold"} 
+```{r} 
 pr.var <- pr.out$sdev^2 
 pve <- pr.var/sum(pr.var)
 pve
@@ -152,6 +155,99 @@ plot(cumsum(pve), xlab="Principal Component", ylab="Cumulative Proportion of Var
 
 İlk 4 temel bileşen verilerdeki değişkenliğin yaklaşık %84'ünü açıklamaktadır.  
 
+## Örnek: İllere göre yaşam kalitesi göstergeleri
+
+```{r}
+# verileri yükleyelim
+load("Data/yasamveri2015.RData")
+# ilk sütunda il isimleri var, bunu dışlayıp prcomp() fonksiyonunu çalıştıralım 
+pr_happiness <- prcomp(veriler[,-1], scale=TRUE)
+summary(pr_happiness)
+```
+
+
+```{r}
+# change the signs of factor loadings
+# and plot the biplot
+pr_happiness$rotation <- -pr_happiness$rotation
+pr_happiness$x <- -pr_happiness$x
+# biplot
+biplot(pr_happiness, scale=0, cex=0.6)
+```
+
+```{r} 
+# compute proportion of variance explained
+pr.var <- pr_happiness$sdev^2 
+pve <- pr.var/sum(pr.var)
+pve
+```
+
+
+```{r} 
+# plot PVE
+plot(pve, xlab="Principal Component", ylab="Proportion of Variance Explained", ylim=c(0,1),type='b')
+```
+
+
+```{r} 
+# cumulative proportion of variance explained
+plot(cumsum(pve), xlab="Principal Component", ylab="Cumulative Proportion of Variance Explained", ylim=c(0,1),type='b')
+```
+
+Verilerdeki değişkenliğin yaklaşık  %80 kadarı ilk 10 temel bileşen ile açıklanabilmektedir. 
+
+<br>
+
+Temel bileşenler analizi için alternatif bir kütüphane: 
+```{r}
+library(factoextra)
+# PCA using factomineR
+library(FactoMineR)
+res_pca_lifedata <- PCA(veriler[,-1],  graph = FALSE)
+get_eig(res_pca_lifedata)
+```
+
+
+```{r}
+# Scree plot
+fviz_screeplot(res_pca_lifedata, addlabels = TRUE)
+```
+
+
+
+## Temel Bileşenler Regresyonu 
+
+(Principal Components Regression, PCR)
+
+Veri setinde yer alan `mutluluk` endeksi için bir temel bileşenler regresyonu tahmin edelim. Bunun için kestirim değişkenlerinin tamamını değil az sayıda temel bileşeni kullanacağız.  
+
+Bunun için `{pls}` paketindeki `pcr()` fonksiyonunu kullanabiliriz.  
+```{r}
+library(pls)
+set.seed(123)
+
+pcr_fit <- pcr(mutluluk ~ . -il, 
+               data = veriler, 
+               scale=TRUE, 
+               validation="LOO") # use leave-one-out cross-validation
+summary(pcr_fit)
+```
+
+
+```{r}
+# how many principal components should we use? 
+# RMSE as a function of the number of PC as computed using CV
+validationplot(pcr_fit)
+```
+
+The minimum RMSE is achieved when we use 19 components. 
+```{r}
+pcr_fit <- pcr(mutluluk ~ . -il, 
+               data = veriler, 
+               scale = TRUE, 
+               ncomp = 19)
+summary(pcr_fit)
+```
 
 # K-Ortalamalar 
 
@@ -202,7 +298,7 @@ plot(bodydata[,22:23],col=(km.out$cluster),cex=2)
 # red = men, black = women
 points(body[,23:24], col=c(1,2)[body$gender], pch=19, cex=1)
 ```
-```{r, echo=TRUE, results="hold"} 
+```{r} 
 observed_class <- c(1,2)[body$gender]
 km_cluster <- km.out$cluster
 ratio <- sum(observed_class == km_cluster)/nrow(bodydata)
@@ -211,6 +307,183 @@ ratio
 
 Buna göre verilerin %84'ü doğru bir şekilde kümelenmiştir. Ancak bunu saptayabilmemizi sağlayan verilerde cinsiyet (gender) değişkeninin yer almasıdır (aslında etiketler mevcut). Bu açıdan bir sınıflandırma problemi olarak düşünülebilir. Bu örnek sadece gösterim amaçlıdır. Eğer çıktı değişkenini biliyorsak gözetimli öğrenme tekniklerini kullanmalıyız. 
 
+## Örnek: İllere göre yaşam kalitesi göstergeleri
+ 
+```{r}
+# load packages 
+library(tidyverse)  # tidy data manipulation
+library(cluster)    # clustering algorithms
+library(factoextra) # clustering visualization 
+```
+
+
+```{r} 
+# load data 
+load("Data/yasamveri2015.RData")
+# make province names rownames
+lifedata2015 <- column_to_rownames(veriler, var = "il")
+```
+
+
+
+```{r}
+# seçilmiş değişkenler
+happiness <- lifedata2015 %>% 
+  select(mutluluk, yasam_bek, ort_gun_kazanc, saglik_tatmin)
+head(happiness)
+```
+
+Display the correlation matrix of the happiness data: 
+```{r}
+library(ggcorrplot)
+cormat <- round(cor(happiness), 2)
+ggcorrplot(cormat, hc.order = TRUE, type = "lower", outline.color = "white")
+```
+
+
+```{r}
+# visualize the distance function 
+# blue: more similar; red: dissimilar 
+# (look at the color legend, low value means more similar)
+distance <- dist(scale(happiness))
+fviz_dist(distance, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07"))
+```
+```{r}
+# display few elements of distance matrix
+as.matrix(distance)[1:6, 1:6]
+```
+
+
+K-means öbekleme: 
+```{r}
+# find cluster 
+happiness_scaled <- scale(happiness)
+kmeans_happy <- kmeans(happiness_scaled, centers = 2, nstart=20)
+# bivariate scatter plots
+plot(happiness[,1:4],col=(kmeans_happy$cluster),cex=2)
+```
+
+
+```{r}
+# cluster plot using principal components
+# use factoextra::fviz_cluster() function to visualize clusters
+# along with the first two principal components
+fviz_cluster(kmeans_happy, data = happiness)
+```
+
+```{r}
+# cluster plot using principal components
+# without ellipses
+fviz_cluster(kmeans_happy, geom = "point", ellipse = FALSE, data = happiness) +
+  ggtitle("K-means cluster of provinces with K=2")
+```
+
+
+
+```{r}
+# PCA using factomineR
+library(FactoMineR)
+res.pca <- PCA(happiness,  graph = FALSE)
+get_eig(res.pca)
+```
+
+
+```{r}
+# Scree plot
+fviz_screeplot(res.pca, addlabels = TRUE, ylim = c(0, 50))
+```
+
+
+```{r}
+# cluster plot using original data 
+happiness %>%
+  mutate(cluster  = kmeans_happy$cluster,
+         province = row.names(happiness)) %>%
+  ggplot(aes(mutluluk, ort_gun_kazanc, color = factor(cluster), label = province)) +
+  geom_text()
+```
+
+
+```{r}
+# cluster plot using original data 
+happiness %>%
+  mutate(cluster  = kmeans_happy$cluster,
+         province = row.names(happiness)) %>%
+  ggplot(aes(mutluluk, yasam_bek, color = factor(cluster), label = province)) +
+  geom_text()
+```
+
+```{r}
+# cluster plot using original data 
+happiness %>%
+  mutate(cluster  = kmeans_happy$cluster,
+         province = row.names(happiness)) %>%
+  ggplot(aes(mutluluk, saglik_tatmin, color = factor(cluster), label = province)) +
+  geom_text()
+```
+
+```{r message=FALSE, warning=FALSE}
+# compare and contrast different number of clusters
+# plot different number of clusters 
+k2 <- kmeans(happiness, centers = 2, nstart = 25)
+k3 <- kmeans(happiness, centers = 3, nstart = 25)
+k4 <- kmeans(happiness, centers = 4, nstart = 25)
+k5 <- kmeans(happiness, centers = 5, nstart = 25)
+
+# plots to compare
+p1 <- fviz_cluster(k2, geom = "point", data = happiness) + ggtitle("k = 2")
+p2 <- fviz_cluster(k3, geom = "point",  data = happiness) + ggtitle("k = 3")
+p3 <- fviz_cluster(k4, geom = "point",  data = happiness) + ggtitle("k = 4")
+p4 <- fviz_cluster(k5, geom = "point",  data = happiness) + ggtitle("k = 5")
+
+library(gridExtra)
+grid.arrange(p1, p2, p3, p4, nrow = 2)
+```
+
+```{r}
+# determine the optimal number of clusters 
+set.seed(123)
+# look for the elbow
+fviz_nbclust(happiness, kmeans, method = "wss")
+```
+
+
+
+```{r}
+# for optimal k=3 compute summary statistics 
+happiness %>%
+  mutate(Cluster = k3$cluster) %>%
+  group_by(Cluster) %>%
+  summarise_all("mean")
+```
+
+```{r}
+# visualize K-means results with 4 clusters
+fviz_cluster(k4, data = happiness,
+             palette = c("#2E9FDF", "#28B463", "#E7B800", "#FC4E07"),
+             ellipse.type = "euclid", # Concentration ellipse
+             star.plot = TRUE,        # Add segments from centroids to items
+             repel = TRUE,            # Avoid label overplotting 
+             ggtheme = theme_minimal()
+)
+```
+```{r}
+# summary results for k = 4 clusters 
+k4$tot.withinss # total sum of sq.
+k4$centers      # centers (means) of clusers
+k4$size         # number of obs. in clusters
+```
+
+```{r}
+# for k=4 add cluster results to the data set 
+# and compute summary statistics 
+happiness_cl <- happiness %>%
+  mutate(cluster_kmeans = k4$cluster) 
+
+happiness_cl %>%
+  group_by(cluster_kmeans) %>%
+  summarise_all("mean")
+```
 
 # Hiyerarşik Kümeleme
 
@@ -227,58 +500,276 @@ plot(hc.average, main="Average Linkage", xlab="", sub="", cex=.9)
 plot(hc.single, main="Single Linkage", xlab="", sub="", cex=.9)
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 cutree(hc.complete, 2)
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 cutree(hc.average, 2)
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 cutree(hc.single, 2)
 ```
 
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 cutree(hc.single, 4)
 ```
 
 Değişkenleri standardize etmek için `scale()` fonksiyonu kullanılabilir: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 xsc=scale(x)
 plot(hclust(dist(xsc), method="complete"), main="Hierarchical Clustering with Scaled Features")
 ```
 
-
-## Örnek: Body data 
+## Örnek: İllere göre yaşam kalitesi göstergeleri
 
 ```{r}
-# exclude gender variables
-body1 <- dplyr::select(body, -c(25,26)) 
-# H.Cluster
-hcbody.complete <- hclust(dist(body1), method="complete")
-hcbody.average <- hclust(dist(body1), method="average")
-hcbody.single <- hclust(dist(body1), method="single")
-```
-
-Dendrogramlar:
-```{r}
-plot(hcbody.complete,main="Complete Linkage", xlab="", sub="", cex=.9)
+# load packages 
+library(tidyverse)  # data manipulation
+library(cluster)    # clustering algorithms
+library(factoextra) # clustering visualization 
 ```
 
 
 ```{r}
-plot(hcbody.average, main="Average Linkage", xlab="", sub="", cex=.9)
+# load data 
+load("Data/yasamveri2015.RData") 
+# make province names rownames
+lifedata2015 <- column_to_rownames(veriler, var = "il")
 ```
 
 
 ```{r}
-plot(hcbody.single, main="Single Linkage", xlab="", sub="", cex=.9)
+# hierarchical clustering 
+# using stats::hclust package
+# scale variables before dist() function
+# can also use pipes, %>%, see example at the end
+hc_complete <- hclust(dist(scale(lifedata2015)), method="complete")
+hc_average <- hclust(dist(scale(lifedata2015)), method="average")
+hc_single <- hclust(dist(scale(lifedata2015)), method="single")
+hc_ward <- hclust(dist(scale(lifedata2015)), method="ward.D2")
+```
+
+
+```{r}
+labsize = 0.7
+plot(hc_complete, main = "Complete Linkage", xlab="", sub="", cex=labsize)
+```
+
+
+```{r}
+plot(hc_average, main = "Average Linkage", xlab="", sub="", cex=labsize)
+```
+
+
+```{r}
+plot(hc_single, main = "Single Linkage", xlab="", sub="", cex=labsize)
+```
+
+
+```{r}
+plot(hc_ward, main = "Ward's Method", xlab="", sub="", cex=labsize)
 ```
 
 
 
-```{r, echo=TRUE, results="hold"}
-
+```{r}
+# focus on a subset of variables 
+# use only happiness level and some selected variables 
+happiness <- lifedata2015 %>% 
+  select(mutluluk, yasam_bek, ort_gun_kazanc, saglik_tatmin)
 ```
+ 
+
+
+```{r}
+# cluster using hclust
+hc_complete <- hclust(dist(scale(happiness)), method="complete")
+hc_average <- hclust(dist(scale(happiness)), method="average")
+hc_single <- hclust(dist(scale(happiness)), method="single")
+hc_ward <- hclust(dist(scale(happiness)), method="ward.D2")
+```
+
+
+```{r}
+plot(hc_complete, main="Complete Linkage", xlab="", sub="", cex=labsize)
+plot(hc_average, main="Average Linkage", xlab="", sub="", cex=labsize)
+plot(hc_ward, main="Ward's method", xlab="", sub="", cex=labsize)
+```
+
+
+```{r}
+# form clusters  
+ncluster = 2
+cutree(hc_complete, ncluster)
+```
+
+
+```{r}
+# plot dendrogram
+plot(hc_complete)
+# draw rectangles around clusters
+rect.hclust(hc_complete , k = ncluster, border = 2:6) 
+```
+
+
+```{r}
+# colorize branches using dendextend library
+library(dendextend)
+avg_dend_obj <- as.dendrogram(hc_complete)
+avg_col_dend <- color_branches(avg_dend_obj, h = 3)
+plot(avg_col_dend)
+```
+
+
+
+
+```{r}
+# Cut tree into  groups
+hc_cluster2 <- cutree(hc_complete, k = 2)
+
+# Number of members in each cluster
+table(hc_cluster2)
+```
+
+
+```{r}
+# visualize result in a scatter plot using factoextra package 
+# 2 clusters
+library(factoextra) 
+fviz_cluster(list(data = happiness, cluster = hc_cluster2))
+```
+
+```{r}
+# we can add cluster information into data 
+happiness %>%
+  mutate(cluster = hc_cluster2) %>%
+  head
+```
+
+
+```{r}
+# Cut tree into  3 groups
+# use Ward method results
+hc_cluster3 <- cutree(hc_ward, k = 3)
+
+# Number of members in each cluster
+table(hc_cluster3)
+```
+
+
+```{r}
+# visualize dendrogram 
+# use factoextra::hcut() function 
+hres3 <- hcut(happiness, k = 3, stand = TRUE)
+# Visualize
+fviz_dend(hres3, rect = TRUE, cex = 0.5,
+          k_colors = c("#F1C40F","#28B463", "#E67E22"))
+# for html color codes visit https://htmlcolorcodes.com/ 
+```
+
+
+
+```{r}
+# visualize result in a scatter plot using factoextra package 
+# 3 clusters 
+library(factoextra) 
+fviz_cluster(list(data = happiness, cluster = hc_cluster3), 
+             palette = c("#F1C40F", "#E67E22", "#28B463"), 
+             repel = TRUE # avoid overplotting text labels
+             )
+```
+
+
+
+```{r}
+# visualize dendrogram 
+# use factoextra::hcut() function 
+# cut into 4 clusters
+hres4 <- hcut(happiness, k = 4, stand = TRUE) # default is hc_method = "ward.D2"
+# Visualize
+fviz_dend(hres4, cex = 0.5,
+          k_colors = c("#F1C40F", "#28B463", "#E67E22", "#3498DB"), 
+          color_labels_by_k = TRUE,
+          rect = TRUE,
+          rect_border = c("#F1C40F","#28B463", "#E67E22", "#3498DB"), 
+          rect_fill = TRUE
+         )
+```
+
+```{r}
+# horizontal dendrogram: 
+# add horiz = TRUE option
+fviz_dend(hres4, cex = 0.5, horiz = TRUE, 
+          k_colors = c("#F1C40F", "#28B463", "#E67E22", "#3498DB"), 
+          color_labels_by_k = TRUE,
+          rect = TRUE,
+          rect_border = c("#F1C40F","#28B463", "#E67E22", "#3498DB"), 
+          rect_fill = TRUE
+         )
+```
+
+```{r}
+# circular dendrogram   
+# add type = "circular" option
+fviz_dend(hres4, cex = 0.5, type = "circular", 
+          k_colors = c("#F1C40F", "#28B463", "#E67E22", "#3498DB") 
+         )
+``` 
+
+
+```{r eval=FALSE, include=TRUE}
+# Alternatively dendrogram may be cut inside the fviz_dend
+fviz_dend(hc_ward,      # cluster results
+          k = 4,        # desired number of clusters
+          rect = TRUE,  # draw rectangles around clusters
+          cex = 0.5     # label size (province names)
+          )
+```
+
+
+
+```{r}
+# 4 clusters using Ward's method 
+# Cut tree into  4 groups
+hc_cluster_ward4 <- cutree(hc_ward, k = 4)
+library(factoextra) 
+fviz_cluster(list(data = happiness, cluster = hc_cluster_ward4),
+          palette = c("#F1C40F", "#3498DB", "#E67E22", "#28B463"), 
+          repel = TRUE)
+```
+
+```{r}
+# add hierarchical clustering result to the data set
+happiness_cl <- happiness_cl %>% 
+  mutate(cluster_hc = hres4$cluster)
+# cluster means
+happiness_cl %>% 
+  select(-cluster_kmeans) %>% 
+  group_by(cluster_hc) %>% 
+  summarize_all(mean)
+```
+
+
+
+Illustration of using the pipe operator ` %>% `: 
+```{r}
+# using pipes
+# dend <- 1:10 %>% dist %>% hclust %>% as.dendrogram 
+# dend %>% plot()
+
+dend <- happiness %>%               # take the data
+  scale() %>%                       # standardize
+  dist %>%                          # calculate a distance matrix, 
+  hclust(method = "complete") %>%   # hierarchical clustering using  
+  as.dendrogram                     # turn it into a dendrogram.
+
+dend %>% plot()
+```
+
+<br>
+<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 0;"></div>
+
+

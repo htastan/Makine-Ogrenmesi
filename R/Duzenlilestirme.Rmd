@@ -1,25 +1,26 @@
 ---
 title: "Düzenlileştirme"
-author: "Prof. Dr. Hüseyin Taştan"
-date: "Ağustos 2020"
+subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
+author: 
+  name: "Prof. Dr. Hüseyin Taştan"
+  affiliation: "Yıldız Teknik Üniversitesi"
+date: "Haziran 2021"
 output:
   html_document: 
     number_sections: true
-    theme: readable
+    theme: lumen
     highlight: haddock 
     # code_folding: show
     toc: yes
     toc_depth: 3
     toc_float: yes
-    keep_md: true
-subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2020)
-institute: Yıldız Teknik Üniversitesi
-
-
+    keep_md: false
 ---
 <style type="text/css"> 
 body{
-  font-size: 12pt;
+  background-color: #FAFAFA;
+  font-size: 18px;
+  line-height: 1.8;
 }
 code.r{
   font-size: 12pt;
@@ -28,11 +29,12 @@ code.r{
 
 ```{r setup, include=FALSE}
 # knitr::opts_chunk$set(echo = TRUE, results = 'asis', fig.show = 'asis')
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ``` 
 
 <br/>
 <br/>
+
 
 
 # Ridge Regresyonu 
@@ -46,13 +48,13 @@ y <- Credit$Balance
 
 
 `x` matrisi birler sütununu içermez:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 head(x) 
 ```
 
 `model.matrix()` fonksiyonu kategorik değişkenleri otomatik olarak kukla değişkenlere dönüştürmektedir. `glmnet()` sadece nicel değişkenleri girdi olarak kabul eder. 
 
-`glmnet()` fonksiyonunun üçünca girdisi, `alpha`, hangi modelin tahmin edileceğini belirler. Ridge regresyonu için `alpha=0`, LASSO için `alpha=1` değeri girilmelidir. 
+`glmnet()` fonksiyonunun üçüncü girdisi, `alpha`, hangi modelin tahmin edileceğini belirler. **Ridge** regresyonu için `alpha=0`, **LASSO** için `alpha=1` değeri girilmelidir. Elastik net için ara değerler girilebilir. 
 
 Ridge modelini tahmin edelim:
 ```{r, warning=FALSE}
@@ -101,6 +103,8 @@ coefficients(lm(Balance ~ . -ID, data=Credit))
 
 <br/>
 <br/>
+
+
 Şimdi verileri eğitim ve test olmak üzere ikiye ayıralım ve ridge regresyonunun test hatasını tahmin edelim.  
 ```{r}
 # eğitim ve test kümeleri
@@ -137,8 +141,8 @@ mean((ridge.pred - y.test)^2)
 
 Bu sonuca göre ridge test hatası daha düşüktür. Katsayıları karşılaştıralım: : 
 ```{r}
-lm(y~x, subset=train)
-predict(ridge.mod,s=0,exact=T,type="coefficients",x=x[train,],y=y[train])[1:12,] 
+lm(y ~ x, subset = train)
+predict(ridge.mod, s=0, exact=T, type="coefficients", x=x[train,], y=y[train])[1:12,] 
 ```
 
 
@@ -178,7 +182,7 @@ lasso.mod <- glmnet(x[train,], y[train], alpha=1, lambda=grid)
 
 
 Çapraz geçerleme ile `lambda` seçimi:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 set.seed(1)
 cv.out <- cv.glmnet(x[train,], y[train], alpha=1, lambda=grid)
 plot(cv.out)
@@ -190,7 +194,7 @@ mean((lasso.pred - y.test)^2)
 
 
 En iyi `lambda` ile kurulan model: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 # out <- glmnet(x,y,alpha=1,lambda=grid)
 out <- glmnet(x,y,alpha=1)
 lasso.coef <- predict(out, type="coefficients", s=bestlam)[1:12,]
@@ -211,19 +215,19 @@ lasso.coef
 ```
 
 Bu durumda son model evlilik ve etnik köken kuklalarını dışlar: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 lasso.coef[lasso.coef!=0] 
 ```
 
 
 # Örnek 
 
-Bu örnek kısmi olarak ISLR ders kitabındak 8. alıştırmaya (s.262) dayanmaktadır. 
+Bu örnek kısmi olarak ISLR ders kitabındaki 8. alıştırmaya (s.262) dayanmaktadır. 
 Önce doğru modelin 3. derece bir polinom olduğu bir veri seti oluşturacağız. Yani doğru model 3 değişken içerecek. Ancak veri setinde 10 değişken olacak. Hangilerinin modele girmesi gerektiğini bilmediğimizi varsayacağız. 
 
 ## Veri setinin simülasyonu
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 set.seed(99) # for replication
 n   <- 400
 x   <- rnorm(n, mean=0, sd=1)
@@ -254,7 +258,7 @@ regfit.full <- regsubsets(y ~ ., data = df, nvmax = 10)
 ```
 
 Veri-bazlı bilgi ölçütleri (Akaike, BIC, Cp, Adj.R2, RSS)
-```{r, echo=TRUE, results="hold"}
+```{r}
 reg.summary <- summary(regfit.full)
 
 # 2x2 plot grid
@@ -285,41 +289,41 @@ points(bestBIC, reg.summary$bic[bestBIC], col="red", cex=2, pch=20)
 axis(1, at = seq(1, 10, by = 1),las=2)
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 regfit.fwd <- regsubsets(y ~ ., data = df, nvmax=10, method="forward")
 reg.fwd.summary <- summary(regfit.fwd)
 reg.fwd.summary
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 regfit.bwd <- regsubsets(y ~ ., data = df, nvmax=10, method="backward")
 reg.bwd.summary <- summary(regfit.bwd)
 reg.bwd.summary
 ```
 
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 coef(regfit.full, 3)
 coef(regfit.fwd, 3)  
 coef(regfit.bwd, 3)
 ```
 
 Cp ölçütüne göre en iyi model: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 coef(regfit.full, which.min(reg.summary$cp))
 coef(regfit.fwd, which.min(reg.fwd.summary$cp)) 
 coef(regfit.bwd, which.min(reg.bwd.summary$cp))
 ```
 
 BIC ölçütüne göre en iyi model:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 coef(regfit.full, which.min(reg.summary$bic))
 coef(regfit.fwd, which.min(reg.fwd.summary$bic)) 
 coef(regfit.bwd, which.min(reg.bwd.summary$bic))
 ```
 
 Adj. R2 ölçütüne göre en iyi model: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 coef(regfit.full, which.max(reg.summary$adjr2))
 coef(regfit.fwd, which.max(reg.fwd.summary$adjr2)) 
 coef(regfit.bwd, which.max(reg.bwd.summary$adjr2))
@@ -327,26 +331,26 @@ coef(regfit.bwd, which.max(reg.bwd.summary$adjr2))
 
 ## LASSO ve çapraz geçerleme
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 x <- model.matrix(y ~ ., df)[,-1]
 y <- df$y 
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 set.seed(666)
 train <- sample(1:nrow(x), nrow(x)/2)
 test <- (-train)
 y.test <- y[test] 
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 library(glmnet)
 lasso.mod <- glmnet(x[train,], y[train], alpha=1)
 plot(lasso.mod) 
 ```
 
 `lambda` için çapraz geçerleme: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 set.seed(1)
 cv.out <- cv.glmnet(x[train,], y[train], alpha=1)
 plot(cv.out)
@@ -357,15 +361,19 @@ mean((lasso.pred - y.test)^2)
 ```
 
 x4-x10 değişkenlerinin katsayılarının tümü sıfırdır: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 out <- glmnet(x,y,alpha=1)
 lasso.coef <- predict(out, type="coefficients", s=bestlam)[1:11,]
 lasso.coef 
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 # sprintf("%.5f",lasso.coef[lasso.coef!=0])
 lasso.coef[abs(lasso.coef)>0.0001]
 ```
 
+
+
+<br>
+<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 0;"></div>
 

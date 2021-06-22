@@ -1,25 +1,26 @@
 ---
-title: "Sınıflandırma Problemleri"
-author: "Prof. Dr. Hüseyin Taştan"
-date: "Ağustos 2020"
+title: "Gözetimli Öğrenme: Sınıflandırma Problemleri"
+subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
+author: 
+  name: "Prof. Dr. Hüseyin Taştan"
+  affiliation: "Yıldız Teknik Üniversitesi"
+date: "Haziran 2021"
 output:
   html_document: 
-    number_sections: true
-    theme: readable
+    number_sections: true 
     highlight: haddock 
+    theme: lumen
     # code_folding: show
     toc: yes
     toc_depth: 3
     toc_float: yes
-    keep_md: true
-subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2020)
-institute: Yıldız Teknik Üniversitesi
-
-
+    keep_md: false
 ---
 <style type="text/css"> 
 body{
-  font-size: 12pt;
+  background-color: #FAFAFA;
+  font-size: 18px;
+  line-height: 1.8;
 }
 code.r{
   font-size: 12pt;
@@ -28,11 +29,12 @@ code.r{
 
 ```{r setup, include=FALSE}
 # knitr::opts_chunk$set(echo = TRUE, results = 'asis', fig.show = 'asis')
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ``` 
 
 <br/>
 <br/>
+
 
 
 
@@ -52,7 +54,7 @@ head(Smarket)
 ISLR paketinde yer alan `Smarket` veri seti S&P500 endeksinin 2001-2005 dönemine ait 1250 günlük getirilerini içermektedir. `Today` sütunu bugünkü getiriyi göstermektedir. Bu değişkenin işareti, yani piyasanın yönü ise, `Direction` isimli sütundadır. `Direction` iki kategoriye sahiptir: Up (pozitif getiri) - Down (negatif getiri). Veri setinde ayrıca getirinin 5-günlük gecikmeli değerleri ve piyasa hacmini içeren `Volume` değişkeni yer almaktadır.  
 
 Günlük getiri grafiği: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 Smarket %>% 
   mutate(day=1:nrow(Smarket)) %>% 
   ggplot(aes(x=day,y=Today)) + 
@@ -60,12 +62,12 @@ Smarket %>%
 ```
 
 Kestirim sorusu: Geçmiş bilgiden hareketle piyasanın bugünkü yönünü (up ya da down) tahmin edebilir miyiz?
-```{r, echo=TRUE, results="hold"}
+```{r}
 n <- length(Smarket$Direction)
 table(Smarket$Direction)/n
 Smarket %>%  
   ggplot(aes(x=Today)) + 
-  geom_histogram()
+  geom_histogram(color = "darkblue", fill = "lightblue")
 ```
 
 ##  `glm()` fonksiyonu
@@ -127,11 +129,11 @@ glm.pred <- as.factor(glm.pred)
 confusionMatrix(glm.pred, Smarket$Direction, positive = "Up")
 ```
 
-`confusionMatrix()` fonksiyonu hata matrisinin yanı sıra çok sayıda istatistik hesaplamaktadır. Ayrıca duyarlılık (sensitivity) ve belirlilik (specificity) gibi çeşitli ölçüleri de raporlamaktadır. Piyasa yön sınıflamasınnda duyarlılık gerçek yukarı yönlü (Up) sınıflandırılan hareketlerin oranıdır, yani 507/(141+507)= 0.7824, %78.24. Belirlilik ise aşağı yönlü hareketler içinde doğru sınıflananların oranıdır: 145/(145+457)= 0.2409, %24.09. 
+`confusionMatrix()` fonksiyonu hata matrisinin yanı sıra çok sayıda istatistik hesaplamaktadır. Ayrıca duyarlılık (sensitivity) ve belirlilik (specificity) gibi çeşitli ölçüleri de raporlamaktadır. Piyasa yön sınıflamasında duyarlılık gerçek yukarı yönlü (Up) sınıflandırılan hareketlerin oranıdır, yani 507/(141+507)= 0.7824, %78.24. Belirlilik ise aşağı yönlü hareketler içinde doğru sınıflananların oranıdır: 145/(145+457)= 0.2409, %24.09. 
 
 
 
-Daha önce belirttiğimiz gibi lojistik model 457+141 = 598 günü yanlış sınıflamıştır (**eğitim hata oranı** =  % 47.8). Daha gerçekçi bir hata oranı hesaplamak için verilerin tahminde kullanılmayan kısmında hatalı sınıflama oranını hesaplamak gerekir.  
+Daha önce belirttiğimiz gibi lojistik model 457+141 = 598 günü yanlış sınıflamıştır (**eğitim hata oranı** =  % 47.8). Daha gerçekçi bir hata oranı hesaplamak için verilerin tahminde kullanılmayan kısmında, yani test verilerinde, hatalı sınıflama oranını hesaplamak gerekir.  
 
 Bu amaçla, veri setinin 2001-2004 yıllarına ait kısmını eğitim veri seti, 2005 yılını ise test veri seti olarak ayıracağız. 
 ```{r}
@@ -196,7 +198,7 @@ Gözlemlerin %56'sı doğru olarak sınıflandırıldı. Ufak bir artış görü
 <br/>
 
 Belirli değerler için öngörü hesaplamak için örnek komut: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 predict(glm.fit, newdata = data.frame(Lag1=c(1.2,1.5),Lag2=c(1.1,-0.8)), type="response")
 ```
 
@@ -285,7 +287,7 @@ Girdiler:
 
 `k`: komşu sayısı (number of neighbours considered).
 
-Daha detaylı açıklamalar için help dosaysına bakınız (`?knn`). 
+Daha detaylı açıklamalar için yardım dosyasına bakınız (`?knn`). 
 
 <br/>
 Önce eğitim ve test setindeki kestirim değişkenlerini içeren matrisleri oluşturalım. Ayrıca eğitim setindeki gerçek sınıflandırmayı gösterin değişkeni yaratalım (`train.Direction`) 
@@ -333,23 +335,15 @@ summary(Default)
 ```
 
 Lojistik regresyon tahmini
-```{r, echo=TRUE, results="hold"}
+```{r}
 # Logistic regression 
 logit.default <- glm(default ~ balance + income + student, data=Default, family=binomial)
 summary(logit.default ) 
 ```
 
-Şimdi kestirimleri oluşturarak hata matrisini tahmin ediniz:  
-```{r, echo=TRUE, results="hold"}
-# Kodlarınızı buraya yazabilirsiniz
+Kestirimleri oluşturarak hata matrisini tahmin ediniz. Ayrıca LDA tahmini yaparak s.145 Table 4.4'ü oluşturunuz. 
 
-```
 
-LDA tahmini yaparak s.145 Table 4.4'ü oluşturunuz: 
-```{r, echo=TRUE, results="hold"}
-# Kodlarınızı buraya yazabilirsiniz
-# Tablo 4.4 
-```
 
 <div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 0;"></div> 
 

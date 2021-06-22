@@ -4,6 +4,7 @@
     <title>Temel Kavramlar</title>
     <meta charset="utf-8" />
     <meta name="author" content="Hüseyin Taştan" />
+    <script src="libs/header-attrs-2.8/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
   </head>
@@ -12,7 +13,7 @@
 class: center, middle, inverse, title-slide
 
 # Temel Kavramlar
-## (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES 2020)
+## (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES 2021)
 ### Hüseyin Taştan
 ### Yıldız Teknik Üniversitesi
 
@@ -79,14 +80,16 @@ rassal hata terimidir.
 
 - `\(Y_i\)` kategorik değişkense: **sınıflandırma** problemi. Örneğin, bir döviz kurunun yarınki hareketinin (aşağı ya da yukarı) öngörülmesi, bir kredi başvurusunun sınıflandırılması, vb. 
 
-- Gözetimsiz öğrenme: Verilerde `\(Y_i\)` yok ya da gözlenemiyor. Amaç özniteliklerden hareketle gözlemlerin öbeklenmesi ya da öznitelik boyutunun küçültülmesi olabilir. Örnek: müşterilerin özelliklerinden hareketle piyasa segmentasyonu yapılması. 
+- Gözetimsiz öğrenme: Verilerde `\(Y_i\)` yok ya da gözlenemiyor. Amaç özniteliklerden hareketle gözlemlerin öbeklenmesi ya da öznitelik boyutunun küçültülmesi olabilir. Örnek: müşterilerin özelliklerinden hareketle piyasa segmentasyonu. 
 
 ---
 
 # Regresyon Problemi Örnek: Gelir ve eğitim düzeyi
 
+.center[![:scale 70%](img/model1a.PNG)]
+
 `$$Income = \underbrace{\beta_0 + \beta_1 Education}_{f(x)}+\epsilon$$`
-.center[![](img/model1.PNG)]
+
 
 ---
 # Örnek: Eğitim ve yaşın bir fonksiyonu olarak gelir düzeyi
@@ -508,6 +511,32 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     deleted = true;
   });
 })();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
 // adds .remark-code-has-line-highlighted class to <pre> parent elements
 // of code chunks containing highlighted lines with class .remark-code-line-highlighted
 (function(d) {
@@ -525,17 +554,6 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   }
   preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
 })(document);</script>
-
-<script>
-(function() {
-  var links = document.getElementsByTagName('a');
-  for (var i = 0; i < links.length; i++) {
-    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
-      links[i].target = '_blank';
-    }
-  }
-})();
-</script>
 
 <script>
 slideshow._releaseMath = function(el) {

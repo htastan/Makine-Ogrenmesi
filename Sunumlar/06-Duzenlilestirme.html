@@ -4,6 +4,7 @@
     <title>Düzenlileştirme</title>
     <meta charset="utf-8" />
     <meta name="author" content="Hüseyin Taştan" />
+    <script src="libs/header-attrs-2.8/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
   </head>
@@ -40,7 +41,11 @@ class: my-medium-font
 
 # Plan
 
-- Düzenlileştirme (Regularization)
+- Doğrusal Model Seçimi 
+
+- Değişken altkümelerinin seçimi 
+
+- Düzenlileştirme (Regularization) kavramı 
 
 - Çıkıntı regresyonu (Ridge regression)
 
@@ -48,7 +53,91 @@ class: my-medium-font
 
 - Elastik Net
 
+- Double-selection LASSO 
+
+- Boyut küçültme 
+
 ---
+# Doğrusal model seçimi 
+
+- Pratikte genellikle bir başlangıç noktası olan doğrusal modeller çeşitli şekillerde geliştirilebilir. 
+
+- Bunlardan biri modelin doğrusal (additive) yapısını bozmadan doğrusal olmayan ilişkilerin eklenmesidir (örneğin polinom terimleri, splinelar, GAM). Modelin parametrelerde doğrusal yapısı aynı kaldığından en küçük kareler yöntemi uygulanabilir. 
+
+- Diğer bir yaklaşım ilgisiz kestirim değişkenlerin dışlanarak modelin performansının iyileştirilmesidir. 
+
+- Değişken sayısının, `\(p\)`, çok fazla olduğu durumlarda özellikle faydalı olabilir. Yaygın kullanılan yöntemler şunlardır: 
+  - Altküme seçimi
+  - Düzenlileştirme yaklaşımı (Shrinkage or regularization): bu yaklaşımda tüm değişkenleri dikkate alınır ancak bazılarının katsayıları sıfıra doğru küçültülür. 
+  - Boyut küçültme. 
+
+--- 
+# Altküme seçimi 
+
+- Burada amaç doğrusal modelde kestirim açısından en önemli/faydalı değişkenlerin belirlenmesidir.  
+
+- En iyi altküme seçimi, ileriye ya da geriye doğru adım adım seçim  
+
+- **En iyi altküme seçimi**: Olanaklı tüm altkümelerin tahmin edilmesini gerektirir. Bu nedenle `\(p\)` büyükse pratikte uygulanamayabilir. 
+
+- **İleriye doğru adım adım seçim**: hiç kestirim değişkeninin olmadığı boş (null) modelden başlanarak değişkenler performansı arttırıp arttırmadığına göre teker teker eklenir.  
+
+- **Geriye doğru adım adım seçim**: bu yöntemde tüm değişkenlerin olduğu en geniş modelden başlanır ve değişkenler teker teker dışlanır. Bu algoritmanın uygulanabilmesi için  `\(n&gt;p\)` olmalıdır. 
+
+
+---
+# Test hatasının dolaylı tahmini 
+
+
+- Bir doğrusal modelde değişken sayısın artarken SSR küçülür ve `\(R^2\)` artar. Bu nedenle bu iki istatistik, SSR ve `\(R^2\)` değerlendirme kıstası olamazlar. 
+
+- Dolaylı yaklaşımda eğitim verilerinden elde edilen hata baz alınır ve aşırı uyumdan kaynaklanan sapma nedeniyle bir ceza terimi eklenir. Elde edilen bu ölçüt model karşılaştırmasında kullanılabilir. Yaygın olarak kullanılan ölçütler şunlardır: 
+- Mellow's `\(C_p\)` 
+`$$C_{p}=\frac{1}{n}\left(\mathrm{RSS}+2 d \hat{\sigma}^{2}\right)$$`
+Burad `\(d\)` modeldeki toplam parametre sayısı ve  `\(\hat{\sigma}^{2}\)` hata varyansının bir tahminidir. 
+
+---
+# Test hatasının dolaylı tahmini 
+
+- Akaike's Information Criterion (AIC): 
+`$$\mathrm{AIC}=-2 \log L+2 \cdot d$$`
+Buarada `\(L\)` logolabilirlik fonksiyonunun maksimum değeridir.  
+
+- Bayesion Information Criterion (BIC): 
+`$$\mathrm{BIC}=\frac{1}{n}\left(\mathrm{RSS}+\log (n) d \hat{\sigma}^{2}\right)$$`
+
+-  `\(C_p\)` ve `\(AIC\)` ölçütleri doğrusal modellerde normal dağılım varsayımı altında aynıdır.  
+
+- Test hatasının küçük olduğu modellerde bu ölçütler de küçük değerler alma eğilimindedir. Bu nedenle farklı modelleri karşılaştırırken en küçük  `\(C_p\)`, AIC, veya BIC değerine sahip olan seçilir.  
+
+- BIC daha büyük bir ceza terimi uyguladığından AIC'ye göre daha küçük modeller seçme eğilimindedir. 
+
+---
+# Test hatasının dolaylı tahmini 
+
+- Düzeltilmiş (Adjusted) `\(R^2\)` 
+`$$\text { Adjusted } R^{2}=1-\frac{\operatorname{RSS} /(n-d-1)}{\operatorname{TSS} /(n-1)}$$`
+Burada RSS kalıntı kareleri toplamı ve TSS toplam kareler toplamıdır.  
+
+- Adjusted `\(R^2\)` model daha karmaşık hale geldikçe azalabilir ya da artabilir. Gereksiz değişkenler eklendiğinde azalır.    
+
+- Büyük bir Düzeltilmiş `\(R^2\)` değerine sahip bir modelin test hatası küçük olur. Bu nedenle büyük değerlere sahip modeller tercih edilir.  
+
+---
+# Test hatasının dolaysız tahmini
+
+- Test hatası geçerleme ve çapraz-geçerleme yaklaşımlarıyla doğrudan tahmin edilebilir.  
+
+- Bunun için veriler eğitim ve geçerleme olmak üzere iki parçaya ayrılır. Eğitim verileriyle model tahmin edilirken sadece geçerleme verileriyle test hatası tahmin edilir. 
+
+-  `\(\mathcal{M}_{k}\)` ile gösterilen model büyüklüğü  `\(k=0,1,2,\ldots\)`, ile endekslenmiş bir model kümesi için geçerleme ve çapraz geçerleme hatası tahmin edilir.  
+
+- Bunların arasından en küçük test hatasına sahip olan tercih edilir.  
+
+- Bu yöntemde test hatasının,  `\(\sigma^2\)`, tahmin edilmesi gerekmez. 
+
+---
+
 # Düzenlileştirme (Regularization)
 
 * Sıradan En Küçük Kareler (OLS) yöntemi Gauss-Markov varsayımları altında sapmasız/tutarlı ve en düşük varyanslı (etkin) tahminciler verir. 
@@ -142,6 +231,34 @@ Ridge regresyonu OLS'ye çok benzer ancak amaç fonksiyonuna bir ceza terimi ekl
 * LASSO'nun en önemli farkı bazı değişkenlerin katsayılarını sıfıra eşitleyerek **değişken seçimi** yapabilmesidir.
 
 ---
+# Ridge ve LASSO'nun geometrik yorumu
+
+- LASSO optimizasyon problemi aşağıdaki gibi yazılabilir: 
+`$$\underset{\beta}{\operatorname{minimize}} \sum_{i=1}^{n}\left(y_{i}-\beta_{0}-\sum_{j=1}^{p} \beta_{j} x_{i j}\right)^{2} \quad \text { subject to } \quad \sum_{j=1}^{p}\left|\beta_{j}\right| \leq s$$`
+
+- Ridge regresyonu için optimizasyon problemi
+`$$\underset{\beta}{\operatorname{minimize}} \sum_{i=1}^{n}\left(y_{i}-\beta_{0}-\sum_{j=1}^{p} \beta_{j} x_{i j}\right)^{2} \quad \text { subject to } \quad \sum_{j=1}^{p} \beta_{j}^{2} \leq s$$`
+burada `\(s\)` kullanıcı tarafından tanımlanan ayarlanma parametresidir. 
+
+- Bu kısıtlanmış optimizasyon problemi izleyen grafiklerdeki gibi görselleştirilebilir. Basitlik amacıyla iki parametreli bir model varsayılmıştır.  
+
+---
+# Ridge ve LASSO'nun geometrik yorumu
+.pull-left[
+![](img/ridge_lasso1.PNG)  
+- Ridge kısıt kümesi: `\(\beta_{1}^2+\beta_{2}^2\leq s\)`
+- LASSO kısıt kümesi: `\(\left|\beta_{1}\right|+\left|\beta_{2}\right|\leq s\)`
+]
+.pull-right[
+- Eliptik çizgiler (kırmızı) kalıntı kareleri toplamı kontür çizgileridir 
+- Mavi çizgiler Ridge ve LASSO kısıtlarıdır.  
+- Dikkat edilirse Ridge regresyonunun kısıt kümesi parametreleri küçültürken hiçbirini sıfır yapmaz. 
+- Diğer taraftan,LASSO kısıt seti bazı parametrelerin tam olarak sıfıra eşitlenmesiyle sonuçlanabilir. 
+]
+
+
+
+---
 # LASSO Örnek: Credit data 
 
 .pull-left[
@@ -179,6 +296,90 @@ Ridge regresyonu OLS'ye çok benzer ancak amaç fonksiyonuna bir ceza terimi ekl
 * Ancak bu yöntem iki kere küçültme yaptığı için kestirim performansı başarılı değildir. 
 
 * Zou ve Hastie naif yaklaşım yerine alternatif bir tahmin çerçevesi önermiştir.
+
+
+---
+# Elastic Net 
+
+
+- Amaç fonksiyonu aşağıdaki gibi yazılabilir: 
+`$$\mathrm{SSR}+\lambda \left[ (1-\alpha) \sum_{j=1}^p \beta_j^2+\alpha \sum_{j=1}^{p}\left|\beta_{j}\right| \right]$$`
+`\(0\leq \alpha \leq 1\)`. 
+-  `\(\alpha=0\)` olduğunda ridge regresyonu,   `\(\alpha=1\)` olduğunda ise LASSO elde edilir.  
+
+- Aslında elastik net bu iki arasında bir yerdedir. Bire yakın `\(\alpha\)` değerleri için elastik net LASSO'ya benzer davranış gösterir. Ancak özellikle değişkenler arasında çok yüksek korelasyonun olduğu durumlarda LASSO'ya göre daha iyi bir performans gösterebilir.  
+
+-  `R` kütüphanesi `glmnet` kullanıcıların `\(\alpha\)` parametresini seçmesine izin verir. Bkz. [An Introduction to glmnet](https://cran.r-project.org/web/packages/glmnet/vignettes/glmnet.pdf)
+
+---
+
+# Post-double selection LASSO
+
+- LASSO'nun model seçiminde kullanılabileceğini öğrendik. Ancak model seçiminde iktisat teorisi de önemlidir. Örneğin, teorik modelden hareketle oluşturulan aşağıdaki modeli düşünelim: 
+`$$y = \alpha\ d + X\beta + \epsilon$$`
+burada  `\(y\)` tepki değişkeni, `\(d\)` potansiyel olarak içsel (endogenous) değişken (treatment variable) ve `\(X\)` ise  `\(p\)` kontrol değişkenini gösteren matristir. ($p&gt;&gt;n$ olabilir). 
+
+- Kontrol değişkenlerini, `\(x\)`, nasıl seçmeliyiz? Tek adımlı seçim prosedürü tipik olarak şöyle çalışır: herhangi bir `\(x_j\)` değişkeni LASSO ve t-testi sonuçlarına göre anlamlıysa modele dahil edilir (post single-selection procedure).  
+
+- Belloni, Chernozukov ve Hansen (2014), parametrelerin sıfıra yakın (ancak tam olarak sıfır değil) olduğu durumda bu yaklaşımın başarısız olacağını göstermiştir.   
+
+
+---
+
+# Değişken seçimi
+
+- Örnek olarak Acemoglu, Johnson, ve Robinson (2001) tarafından incelenen kurum kalitesi ve ekonomik büyüme performansı ilişkisine bakalım: 
+
+`$$log(GDPpc) = \alpha~ Q + X\beta+\epsilon$$`
+
+burada `\(Q\)` kurum kalitesini gösteren bir değişkendir. Kontrol değişkenleri arasında coğrafi ve ülkeye özgü bir çok faktör yer almaktadır.   
+
+- Bu modelde  `\(Q\)` içseldir. Acemoglu et al. (2001) erken dönem yerleşimcilerinin yaşam süresini araç değişken olarak kullanmıştır.  
+
+- Ancak hangi `\(X\)` değişkenlerinin modele eklenmesi gerektiği açık değildir. İki adımlı LASSO seçimi bu konuda yardımcı olabilir.  
+
+---
+
+# Double-Selection LASSO
+
+- Belloni, Chernozhukov, ve Hansen tarafından önerilmiştir.  
+
+- Algoritma adımları: (daha detaylı bilgi için bkz. [How to do model selection with inference in mind](https://stuff.mit.edu/~vchern/papers/Chernozhukov-Saloniki.pdf))
+
+Adım 1: LASSO (veya başka bir düzenlileştirme yöntemini) kullanarak `\(y\)`'yi en iyi kestiren `\(x_j\)` değişkenlerini bul. 
+
+Adım 2: LASSO (veya başka bir düzenlileştirme yöntemini) kullanarak `\(d\)`'yi en iyi kestiren `\(x_j\)` değişkenlerini bul. 
+
+Adım 3: Her iki adımda seçilen değişkenleri kullanarak OLS ile modeli yeniden tahmin et 
+
+- Dikkat edilirse değişken seçimi iki kere uygulanır: ilk adımda `\(y\)` tepki değişkenidir, ikinci adımda ise `\(d\)` tepki değişkenidir. Burada amaç dışlanmış değişken sapmasını en küçük yapmaktır.  
+
+
+---
+
+# Boyut küçültme yöntemleri 
+
+- Bu yöntemler kestirim değişkenlerinin bir dönüştürmesini bularak modelin boyutu küçültür.   
+
+-  `\(Z_1,Z_2,\ldots,Z_M\)`, `\(p\)` kestirim değişkeninin  `\(M&lt;p\)` doğrusal kombinasyonu olsun:  
+`$$Z_{m}=\sum_{j=1}^{p} \phi_{m j} X_{j}$$`
+Burada `\(\phi_{m 1},\ldots,\phi_{m p}\)` doğrusal kombinasyon katsayılarıdır. 
+
+- `\(M&lt;p\)` olduğundan model sıradan en küçük kareler yöntemi ile tahmin edilebilir: 
+`$$y_{i}=\theta_{0}+\sum_{m=1}^{M} \theta_{m} z_{i m}+\epsilon_{i}, \quad i=1, \ldots, n$$`
+
+---
+# Temel bileşenler regresyonu 
+
+- Temel Bileşenler Regresyonu (Principal Components Regression (PCR)) yüksek boyutlu kestirim değişkenleri kümesinin bir lineer kombinasyonunu baz alır.  
+
+- Temel Bileşenler Analizi (PCA) birbiriyle ilişkisiz doğrusal kombinasyonların bulunmasının bir yöntemini sunar. Bir veri kümesinde değişken sayısı kadar temel bileşen bulunur. 
+
+- Bunlardan birinci temel bileşen verilerdeki değişkenliği en fazla açıklayan bileşendir. Bu bileşen bulunduktan sonra doğrusal regresyonda kullanılabilir.   
+ 
+
+
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
@@ -228,6 +429,32 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     deleted = true;
   });
 })();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
 // adds .remark-code-has-line-highlighted class to <pre> parent elements
 // of code chunks containing highlighted lines with class .remark-code-line-highlighted
 (function(d) {
@@ -245,17 +472,6 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   }
   preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
 })(document);</script>
-
-<script>
-(function() {
-  var links = document.getElementsByTagName('a');
-  for (var i = 0; i < links.length; i++) {
-    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
-      links[i].target = '_blank';
-    }
-  }
-})();
-</script>
 
 <script>
 slideshow._releaseMath = function(el) {

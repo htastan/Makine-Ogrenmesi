@@ -1,28 +1,43 @@
 ---
-title: "R ile Veri Analizinde *Tidy* Yaklaşım"
-author: "Prof. Dr. Hüseyin Taştan"
-date: "Ağustos 2020"
+title: "R ile Veri Analizinde *Tidyverse* Yaklaşımı"
+subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
+author: 
+  name: "Prof. Dr. Hüseyin Taştan"
+  affiliation: "Yıldız Teknik Üniversitesi"
+date: "Haziran 2021"
 output:
   html_document: 
     number_sections: true
-    theme: readable
+    theme: lumen
     highlight: haddock 
     # code_folding: show
     toc: yes
     toc_depth: 3
     toc_float: yes
-    keep_md: true
-subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2020)
-institute: Yıldız Teknik Üniversitesi
+    keep_md: false
 ---
-
+<style type="text/css"> 
+body{
+  background-color: #FAFAFA;
+  font-size: 18px;
+  line-height: 1.8;
+}
+code.r{
+  font-size: 12pt;
+}
+</style>
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, results = 'hold', fig.show = 'asis')
+# knitr::opts_chunk$set(echo = TRUE, results = 'asis', fig.show = 'asis')
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ``` 
 
+<br/>
+<br/>
 
-# Tidy Yaklaşım
+
+
+# R'ın Modern bir yorumu: Tidyverse 
 
 
 [Tidyverse](https://www.tidyverse.org/) modern veri analizi için geliştirilmiş R paketler topluluğuna verilen isimdir. Bu konuda temel kaynak Garret Grolemund ve Hadley Wickham tarafından yazılan [R for Data Science](https://r4ds.had.co.nz/) kitabıdır. Ayrıca bkz. [*Tidy Data*](https://vita.had.co.nz/papers/tidy-data.pdf) (Hadley Wickham, 2014 JSS), ve [Tidy data Vignette](https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html)  
@@ -35,23 +50,24 @@ library(tidyverse)
 ```
 
 
-`library(tidyverse)` komutu ile aşağıdaki R paketlerinin tamamı aktif hale gelir: 
-
-* `ggplot2`, verilerin görselleştirilmesi
-
-* `dplyr`, verilerin işlenmesi
-
-* `tidyr`, verilerin "tidy" hale getirilmesi
-
-* `readr`, verilerin okunması
-
-* `purrr`, fonksiyonel programlama
-
-* `tibble`, tibbles (R'da en temel nesnelerden biri olan `data.frame`'in modern versiyonu)
-
-* `stringr`, karakterlerin işlenmesi
-
-* `forcats`, faktör değişkenlerinin işlenmesi
+- `library(tidyverse)` komutu ile aşağıdaki R paketlerinin tamamı aktif hale gelir: 
+  * `{ggplot2}`: verilerin görselleştirilmesi
+  
+  * `{dplyr}`: verilerin işlenmesi
+  
+  * `{tidyr}`: verilerin düzenli ("tidy") hale getirilmesi
+  
+  * `{readr}`: verilerin okunması
+  
+  * `{purrr}`: fonksiyonel programlama
+  
+  * `{tibble}`: veri çerçevesi (data.frame'in yeni yorumu)
+  
+  * `{stringr}`: karakterlerin işlenmesi
+  
+  * `{forcats}`: faktör değişkenlerinin işlenmesi 
+  
+Bu paketlerin yanı sıra Tidyverse yaklaşımıyla uyumla çok sayıda R paketi mevcuttur. 
 
 <br/>
 <br/>
@@ -68,7 +84,7 @@ head(gapminder)
 ```
 
 `gapminder` Tidyverse jargonunda bir **tibble**'dır. Tibble aslında bir `data frame`'dir. Ancak çeşitli açılardan `data frame` ile farklılık gösterir. `tibble` paketindeki `tibble::tibble()` fonksiyonunu kullanarak bir tidy veri seti yaratabiliriz: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 tibble(
   x = 1:5, 
   y = 1, 
@@ -77,7 +93,7 @@ tibble(
 ```
 
 Başka bir örnek:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 df <- tibble(
   xvariable = runif(5),
   depvariable = 2+ 5*xvariable + rnorm(5)
@@ -85,7 +101,7 @@ df <- tibble(
 df
 ```
 
-Tıpkı temel R'daki `data.frame` fonksiyonunda olduğu gibi `tibble` içindeki değişkenlere çeşitli yollarla ulaşabiliriz:  
+Tıpkı temel `R`'daki `data.frame` fonksiyonunda olduğu gibi `tibble` içindeki değişkenlere çeşitli yollarla ulaşabiliriz:  
 ```{r}
 # extract by column name
 df$xvariable
@@ -100,7 +116,9 @@ df[[1]]
 ```
 
 
-# `dplyr` paketi ile verilerin işlenmesi 
+# `{dplyr}` paketi ile verilerin işlenmesi 
+
+`{dplyr}` kütüphanesi verilerin işlenmesi ve manipülasyonu için çeşitli fonkisyonlar içerir. Bunların en önemlileri aşağıda ele alınmıştır. 
 
 ## `filter()` 
 
@@ -109,24 +127,24 @@ df[[1]]
 ![](img/filter.png)
 
 Örnek olarak `gapminder` veri setinde Türkiye'nin gözlemlerini almak istediğimizi düşünelim. Veri setini incelediğimizde Türkiye'nin 1573 ile 1584 satırları arasında yer aldığını görüyoruz. Bu bilgiden hareketle Türkiye veri setini aşağıdaki gibi oluşturabiliriz: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 (turkey <- gapminder[1573:1584,])
 ```
 
 Satır numaralarını kullanarak verileri çekmek hata olasılığını arttırdığı için etkin bir yaklaşım değildir. Bunun yerine `dplyr::filter()` fonksiyonunu kullanabiliriz. Bu fonksiyonun girdisi verilerin satırlarına uygulanan mantıksal ifadelerdir. Örneğin: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 filter(gapminder, country == "Turkey")
 ```
 
 Bu fonksiyonun kullanımı baz `R`'daki  `subset()` fonksiyonuna benzemektedir.  
 
 Çoklu ifadelerin kullanılmasına izin verir. Örneğin, Türkiye'nin 2000 sonrası verileri için aşağıdaki komutu kullanabiliriz: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 filter(gapminder, country == "Turkey", year>2000)
 ```
 
 Örnek: Türkiye ve Brezilya'nın 2000 sonrası verilerini çek:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 filter(gapminder, country %in% c("Turkey","Brazil"), year>2000)
 ```
 
@@ -135,26 +153,26 @@ filter(gapminder, country %in% c("Turkey","Brazil"), year>2000)
 ![](img/select.png)
 
 Sütunlardan (değişkenlerden) hareketle yeni bir alt küme oluşturmak istersek `dplyr::select()` fonksiyonunu kullanabiliriz.  
-```{r, echo=TRUE, results="hold"}
+```{r}
 select(gapminder, year, gdpPercap) %>% head(10)
 ```
 
 Pipe (` %>% `) kullanımı:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 gapminder %>% select(year, gdpPercap) %>% head(5)
 ```
 
 `select()` ve `filter()` birlikte kullanılabilir. 
 
 Örnek: Türkiye ve Brezilya için 2000 sonrasında kişi başına GDP değişkenini göster: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 gapminder %>% filter(country %in% c("Turkey","Brazil"), year>2000) %>% select(year, gdpPercap)
 ```
 
 Alıştırma: Önceki örnekteki tabloyu sadece baz R fonksiyonlarını kullanarak oluşturunuz. 
 
 `R`'da bir görevi yerine getirmenin birden çok yolu olabilir. Benim çözümüm: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 gapminder[gapminder$country  %in% c("Turkey", "Brazil") & gapminder$year>2000, c("year", "gdpPercap")]
 ```
 
@@ -168,12 +186,12 @@ gapminder[gapminder$country  %in% c("Turkey", "Brazil") & gapminder$year>2000, c
 `mutate()` içinde kullanılan hesaplama fonksiyonları vektörleştirilmiş olmalıdır; yani hem girdi hem de çıktı vektör olmalıdır. 
 
 Örnek: Kişi başına GDP'nin doğal logaritması:   
-```{r, echo=TRUE, results="hold"}
+```{r}
 mutate(gapminder, lgdppc = log(gdpPercap)) %>% head(5)
 ```
 
 Örnek: Toplam ülke GDP değerlerini oluştur
-```{r, echo=TRUE, results="hold"}
+```{r}
 mutate(gapminder, gdp = gdpPercap*pop ) %>%
   select(year,country,gdpPercap,pop,gdp) %>% head(5)
 ```
@@ -197,13 +215,13 @@ arrange(gapminder, country, year)
 ```
 
 Default = ascending. Azalan sıralama yapmak istersek: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 arrange(gapminder, country, desc(year)) %>% head(5)
 ```
 
 
 `filter()` ve `arrange()` birlikte kullanılabilir. Örneğin: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 gapminder %>% 
   filter(year==2007, continent=="Americas") %>% 
   arrange(lifeExp) 
@@ -219,12 +237,12 @@ gapminder %>%
 ## `group_by()`
 
 Verilerin gruplandırılması amacıyla kullanılır. Verilerin görünümünü değiştirmez. `summarize()` gibi diğer fonksiyonlarla birlikte kullanılabilir.
-```{r, echo=TRUE, results="hold"}
+```{r}
 gapminder %>%  
   group_by(continent, year)  
 ```
 
-## `summarize()`
+## `summarise()` ya da `summarize()`
 
 ![summarize()](img/summarize.PNG) 
 
@@ -232,15 +250,15 @@ Verilerin özet istatistiklerinin oluşturulmasında `dplyr::summarize()` kullan
 
 ![group_by()](img/groupby.png)
 
-Örnek: 2007 yılında her bir kıtada kaç ülke var?
-```{r, echo=TRUE, results="hold"}
+**Örnek**: 2007 yılında her bir kıtada kaç ülke var?
+```{r}
 gapminder %>% 
   filter(year==2007) %>%
   group_by(continent) %>%
   summarize(n = n())
 ```
 
-Örnek: 2007 yılında kıtalara göre ortalama yaşam beklentisini ve ortalama kişi başına GDP değerini bulun 
+**Örnek**: 2007 yılında kıtalara göre ortalama yaşam beklentisini ve ortalama kişi başına GDP değerini bulun 
 ```{r}
 gapminder %>% 
   filter(year==2007) %>%
@@ -256,8 +274,8 @@ gapminder %>%
   summarize_at(vars(lifeExp,gdpPercap), list(~mean(.)) )
 ```
 
-Örnek: Önceki işlemi 1952 ve 2007 yılları için yapalım ve ortalamaları karşılaştıralım: 
-```{r, echo=TRUE, results="hold"}
+**Örnek**: Önceki işlemi 1952 ve 2007 yılları için yapalım ve ortalamaları karşılaştıralım: 
+```{r}
 gapminder %>% 
   filter(year %in% c(1952,2007)) %>%
   group_by(continent, year) %>%
@@ -269,7 +287,7 @@ gapminder %>%
 Kullanılabilecek standart özet istatistikler: `mean()`, `median()`, `var()`, `sd()`, `mad()`, `IQR()`, `min()`, and `max()`.
 
 **Örnek**: Avrupa'da her yıl için minimum ve maksimum yaşam beklentisini bulunuz.  
-```{r, echo=TRUE, results="hold"}
+```{r}
 gapminder %>% 
   filter(continent=="Europe") %>%
   group_by(year) %>%
@@ -277,7 +295,7 @@ gapminder %>%
 ```
 
 **Örnek**:  `mutate()` ve `group_by()` fonksiyonlarının birlikte kullanımı: Her ülke için kişi başına GDP değişkeninin başlangıç yılındaki değerine oranını gösteren yeni bir değişken oluşturunuz. Yeni değişken başlangıç yılı olan 1952'de 1 değerini almalı, diğer yıllar için başlangıç yılına göre 1+büyüme oranı.   
-```{r, echo=TRUE, results="hold"}
+```{r}
 gapminder %>%  
   group_by(country) %>%
   select(country, year, gdpPercap) %>% 
@@ -306,7 +324,7 @@ gapminder %>%
 
 
 Yukarıda **pipe** operatörünü kullandık. Bunu kullanmadan aynı kodu çalıştırmak istersek:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 mutate(select(group_by(gapminder,country), country, year, gdpPercap), gdppc_growth = 100*(gdpPercap-lag(gdpPercap))/lag(gdpPercap))
 ```
 
@@ -330,7 +348,7 @@ europe %>%
 ```
 
 Aynısını en yüksek yaşam beklentisi için yapalım: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 europe %>% group_by(year) %>% 
   mutate(le_desc_rank = min_rank(desc(lifeExp))) %>% 
   filter(le_desc_rank < 3) %>% 
@@ -341,11 +359,11 @@ europe %>% group_by(year) %>%
 
 
 
-# `tidyr` ile verilerin düzenlenmesi
+# `{tidyr}` ile verilerin düzenlenmesi
 
 ## Verilerin organizasyonuna ilişkin örnekler
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 library(readxl)
 trdata1 <- read_excel("Data/trdata1.xlsx") 
 trdata1
@@ -357,18 +375,18 @@ Bu veri setin düzenli (tidy) formata sahip değildir. Değişkenler satırlarda
  
 
 Grolemund ve Wickham aynı bilgiyi içeren ancak farklı şekillerde organize edilmiş veri seti örnekleri oluşturmuştur: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 library(tidyverse)
 library(gapminder)
 table1
 ```
-```{r, echo=TRUE, results="hold"}
+```{r}
 table2 
 ```
-```{r, echo=TRUE, results="hold"}
+```{r}
 table3
 ```
-```{r, echo=TRUE, results="hold"}
+```{r}
 # Information spread to two tibbles:
 # cases
 table4a
@@ -385,18 +403,18 @@ Bu veri setlerini nasıl tidy formata dönüştürebiliriz? Tidy formatta aşağ
 ## `pivot_longer()`
 
 Baz R'daki `reshape()` fonksiyonuna benzer şekilde verileri yeniden düzenleyebiliriz. Örnek veri setlerinde `table4a` ve  `table4b`'yi ele alalım. İlkinde `cases` değişkenini değerleri yer almaktadır: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 pivot_longer(table4a, c(`1999`, `2000`), names_to = "year", values_to = "cases")
 ```
 
 Pipe operatörü ile: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 table4a %>% 
   pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
 ```
 
 İkincisi, `table4b`, nüfus (population) değerlerini içeriyor: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 table4b %>% 
   pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "population")
 ```
@@ -404,7 +422,7 @@ table4b %>%
 Elimizde `cases` ve `population` değerlerini içeren ülke ve yıl bilgisi aynı olan iki tidy veri seti var. Bunları nasıl birleştirebiliriz? 
 
 Birleştirme için `dplyr::left_join()` fonksiyonunu kullanabiliriz: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 tidy4a <- table4a %>% 
   pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
 tidy4b <- table4b %>% 
@@ -414,7 +432,7 @@ left_join(tidy4a, tidy4b)
 
 **Örnek**
 Yeni bir veri seti (`dfwide`) oluşturalım: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 province = c("Istanbul", "Izmir", "Ankara")
 plaka = c(34,35,6)
 GDPpc2005=c(16749,12011,15392)
@@ -425,7 +443,7 @@ dfwide
 ```
 
 Sütunlarda yıllar var (wide format). Şimdi bunu `pivot_longer()` ile long formata dönüştürelim: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 pivot_longer(dfwide, c(`GDPpc2005`, `GDPpc2010`, `GDPpc2015`), names_to = "year", values_to = "GDPpc", names_prefix = "GDPpc")
 ```
 
@@ -441,19 +459,19 @@ Ancak burada satırlarda değişkenler var. Bunları sütunlara aktarmalıyız. 
 ## `pivot_wider()`
 
 `pivot_wider()` long-form verileri wide-form'a dönüştürür. Örneğin, `table2` verilerini düşünelim:
-```{r, echo=TRUE, results="hold"}
+```{r}
 table2  
 pivot_wider(table2, names_from = type, values_from = count)
 ```
 
 **Örnek**: `trdata1` ve `trdata1_long` veri kümelerine geri dönelim: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 trdata1_tidy <- pivot_wider(trdata1_long, names_from = variable, values_from = values)
 trdata1_tidy
 ```
 
 
-# `ggplot2` ile verilerin görselleştirilmesi
+# `{ggplot2}` ile verilerin görselleştirilmesi
 
 `ggplot2` verilerin görselleştirilmesinde **grafiklerin grameri** (grammar of graphics) yaklaşımını uygulayan, Hadley Wickham tarafından geliştirilmiş bir R paketidir. `ggplot2` hakkında daha fazla kaynak için bkz. 
 
@@ -558,7 +576,7 @@ ggplot(data = y2007 ) +
 
 Yaşam beklentisinin iki modlu bir dağılıma sahip olduğunu görüyoruz. 
 
-Örnek: Tüm verileri kullanarak yaşam beklentisinin histogramını çizelim: 
+**Örnek**: Tüm verileri kullanarak yaşam beklentisinin histogramını çizelim: 
 ```{r}
 library(gapminder)
 ggplot(data =gapminder ) +
@@ -566,31 +584,55 @@ ggplot(data =gapminder ) +
 ```
 
 
-
-Örnek: Simülasyon ile elde edilen bir veri setinde histogram ve yoğunluk grafiklerini çizelim. Önce 3 ders için notları türetelim: 
-```{r} 
+**Örnek**: Verileri oluşturalım: 
+```{r}
 set.seed(1)
 n <- 200
-grades1 <- rnorm(n, mean = 50, sd = 10)
-grades2 <- rnorm(n, mean = 60, sd = 15)
-grades3 <- rnorm(n, mean = 70, sd = 12)
-class <-  factor( rep(c("Econometrics-1","Econometrics-2","Machine-Learning"), each=n) )
-gradedata <- data.frame(class, grades = c(grades1, grades2, grades3))
-gradedata <- filter(gradedata, grades<=100 & grades>=0)
-head(gradedata)
+notlar1 <- round(rnorm(n, mean = 50, sd = 10))
+notlar2 <- round(rnorm(n, mean = 60, sd = 15))
+notlar3 <- round(rnorm(n, mean = 70, sd = 12))
+ders <-  factor( rep(c("Ekonometri-1","Ekonometri-2","Makine Öğrenmesi"), each=n) )
+not_verileri <- tibble(ders, 
+                       not = c(notlar1, notlar2, notlar3), 
+                       cinsiyet = sample(c("Kadın", "Erkek"), 3*n, replace = TRUE))
+not_verileri <- filter(not_verileri, not<=100 & not>=0)
+head(not_verileri)
 ```
 
+
 ```{r}
-ggplot(data = gradedata) +
-  geom_histogram(mapping = aes(x = grades)) +
-  facet_wrap(~ class)
+not_verileri %>% filter(ders == "Ekonometri-1") %>% 
+  ggplot() +
+  geom_histogram(mapping = aes(x = not))  
+```
+
+Histogramın default değerleri pek göze hitap etmiyor, sınıflar birbiriyle kaynaşmış ve sınıf sayısı da optimal değil. Yeniden çizelim: 
+
+```{r}
+not_verileri %>% filter(ders == "Ekonometri-1") %>% 
+  ggplot(mapping = aes(x = not)) +
+  geom_histogram(binwidth = 5,       # sütun genişliği 
+                 color = "darkblue",  # sütun sınırlarının rengi
+                 fill = "lightblue"   # sütun içinin rengi
+                 )  
+```
+
+Diğer dersler için de histogramları çizelim ve yan yana paneller oluşturalım: 
+```{r}
+ggplot(data = not_verileri) +
+  geom_histogram(mapping = aes(x = not), 
+                 binwidth = 10, 
+                 color = "darkblue", 
+                 fill  = "lightblue"
+                 ) + 
+  facet_wrap(~ ders)
 ```
 
 ## Kutu grafiği (Box Plot)
 
 ```{r, echo=TRUE}
-ggplot(data = gradedata) +
-  geom_boxplot(mapping = aes(x = class, y=grades))  
+ggplot(data = not_verileri) +
+  geom_boxplot(mapping = aes(x = ders, y=not))  
 ```
 
 **Örnek:** Gapminder veri setinde yaşam beklentisinin kıtalara göre kutu çizimi.  
@@ -606,7 +648,7 @@ ggplot(data = gapminder, mapping = aes(x = continent, y = lifeExp)) +
 
 Elimizde bir kategorik değişken ve bir nümerik değer varsa `geom_point()` kullanılabilir. 
 
-Örnek: Avrupa'da 2007 yılındaki yaşam beklentisi küçükten büyüğe sıralayıp nokta grafiğini çiz.
+**Örnek**: Avrupa'da 2007 yılındaki yaşam beklentisi küçükten büyüğe sıralayıp nokta grafiğini çiz.
 ```{r}
 # önce verileri oluştur
 europe2007 <- gapminder %>% 
@@ -691,11 +733,8 @@ ggplot(gapminder, aes(x=log(gdpPercap),y=lifeExp)) +
 
 ```{r}
 library(tidyverse)
-library(readxl)
-url <- "http://tuik.gov.tr/PreIstatistikTablo.do?istab_id=2421"
-destfile <- "PreIstatistikTablo.xls"
-curl::curl_download(url, destfile)
-veriler <- read_excel(destfile, range = "A6:BA88")
+library(readxl) 
+veriler <- read_excel("Data/mutluluk2015.xls", range = "A6:BA88")
 ```
 
 `View(veriler)` ile verileri incelediğimizde bazı gözlemlerin boş olduğunu (NA) ve değişken isimlerinin çok uzun olduğunu görüyoruz. Bunun dışında veriler düzenli (tidy) formattadır. 
@@ -788,7 +827,7 @@ corrplot(cor(veriler[-1]), is.corr=TRUE, order = "FPC")
 ```
 
 Verileri daha sonra kullanmak için `RData` formatında kaydedelim:  
-```{r, echo=TRUE, results="hold"}
+```{r}
 save(veriler, file = "Data/yasamveri2015.RData")
 ```
 
@@ -801,7 +840,7 @@ summary(veriler$mutluluk)
 ```
 ```{r}
 veriler %>% ggplot(mapping = aes(x = mutluluk)) +
-  geom_histogram(bins = 6)
+  geom_histogram(bins = 6, color = "darkblue", fill = "lightblue")
 ```
 
 En mutlu iller hangileri? 
@@ -814,7 +853,7 @@ veriler %>%
 ```
 
 Bu tablonun (tüm iller için) grafiğini oluşturalım: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 ggplot(veriler, aes(x = mutluluk, y = fct_reorder(il, mutluluk))) +
   geom_point()
 ```
@@ -832,4 +871,11 @@ ggplot(veriler, aes(x=ort_gun_kazanc, y=mutluluk)) +
 ggplot(veriler, aes(x=orta_ust_gelir_gr, y=mutluluk)) +
       geom_point()
 ```
+
+
+
+<br>
+<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 0;"></div>
+
+
 

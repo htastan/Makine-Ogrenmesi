@@ -1,25 +1,26 @@
 ---
 title: "R: Giriş"
-author: "Prof. Dr. Hüseyin Taştan"
-date: "Ağustos 2020"
+subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
+author: 
+  name: "Prof. Dr. Hüseyin Taştan"
+  affiliation: "Yıldız Teknik Üniversitesi"
+date: "Haziran 2021"
 output:
   html_document: 
     number_sections: true
-    theme: readable
+    theme: lumen
     highlight: haddock 
     # code_folding: show
     toc: yes
     toc_depth: 3
     toc_float: yes
-    keep_md: true
-subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2020)
-institute: Yıldız Teknik Üniversitesi
-
-
+    keep_md: false
 ---
 <style type="text/css"> 
 body{
-  font-size: 12pt;
+  background-color: #FAFAFA;
+  font-size: 18px;
+  line-height: 1.8;
 }
 code.r{
   font-size: 12pt;
@@ -28,11 +29,12 @@ code.r{
 
 ```{r setup, include=FALSE}
 # knitr::opts_chunk$set(echo = TRUE, results = 'asis', fig.show = 'asis')
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ``` 
 
 <br/>
 <br/>
+
 
 # R ve RStudio 
 
@@ -82,51 +84,51 @@ pi
 
 ve
 
-```{r, echo=TRUE}
+```{r }
 log(exp(-5))
 ```
-```{r, echo=TRUE}
+```{r}
 e <- exp(1)
 print(e, digits = 3)
 ```
-```{r, echo=TRUE}
+```{r}
 e <- exp(1)
 print(e, digits = 17)
 ```
 
 Elimizde gelişmiş bir hesap makinesi var. Şimdi başka bir işlem yapalım ve $a = (9\times 8.1) + 8.1$ ve işlemini R'da yazalım. Sonucu biliyoruz, tam olarak 
 $10\times 8.1 = 81$. Çarpma işlemi her zaman toplamadan önce geldiği için (eğer parantez yoksa) işlemi aşağıdaki gibi yazabiliriz:
-```{r, echo=TRUE}
+```{r}
 a <- 9*8.1 + 8.1
 print(a)
 ```
 
 Çok güzel. Hata yok gibi. Sıfırdan sonraki basamaklara daha yakından bakalım: 
-```{r, echo=TRUE}
+```{r}
 print(a, digits = 17)
 ```
 
-81 olarak bulduğumuz sonuç tam olarak 81 değil. Ama nasıl olur? Bilgisayar neden bize tam sonuç vermiyor? Bunun nedeni 81 sayısının (aslında tüm sayıların) ikili sistem kullanan bilgisayarlarda tam olarak temsil edilememesidir.  81'in temsilindeki hata: 
-```{r, echo=TRUE}
+81 olarak bulduğumuz sonuç tam olarak 81 değil. Bunun nedeni 81 sayısının (aslında tüm sayıların) ikili sistem kullanan bilgisayarlarda tam olarak temsil edilememesidir.  81'in temsilindeki hata: 
+```{r}
 print(81-a, digits = 17)
 ```
 Hata = $1.4210854715202004\times 10^{-14}$,  ya da 
-```{r, echo=TRUE}
+```{r}
 format(81-a, scientific = FALSE)
 ```
 
 Bu, yaptığınız hesaplamanın amacına bağlı olarak sorun yaratabilir. Örneğin yazdığınız programda bir aritmetik işlemin sonucunu başka bir sonuçla karşılaştırmak istediğinizi düşünelim. Bunun için mantıksal işlemcileri kullanabilirsiniz. Örneğin
-```{r, echo=TRUE}
+```{r}
 81 == a
 ```
 
 Bildiğimiz tam sonuç (81) ile aritmetik işlemin sonucu (a) eşit değil. Aslında eşit olduklarını biliyoruz. Ancak bilgisayar temsilinde (floating point arithmetic) yaklaşık olarak eşittirler:  
-```{r, echo=TRUE}
+```{r}
 all.equal(81,a)
 ```
 
-Burada default tolerans düzeyi $0.000000015$ kullanıldı. Yani aritmetik çözüm ile tam sonuç arasındaki fark tolerans düzeyinden küçüktür. R'da machine precision ($\epsilon$) 
-```{r, echo=TRUE}
+Burada default tolerans düzeyi $0.000000015$ kullanıldı. Yani aritmetik çözüm ile tam sonuç arasındaki fark tolerans düzeyinden küçüktür. `R`'da machine precision ($\epsilon$) 
+```{r}
 print(.Machine$double.eps, digits=22)
 ```
 
@@ -142,7 +144,7 @@ u<1
 <br/>
 
 Diğer aritmetik işlemler de sorun yaratabilir. Örneğin 10.2'den 10.1'i çıkaralım: 
-```{r, echo=TRUE}
+```{r}
 b <- 10.2 - 10.1
 print(b, digits = 17)
 ```
@@ -174,12 +176,12 @@ library(ISLR)
 ## Dosya isimleri ve güncel dizin
 
 `getwd()` komutu ile güncel dizini görebiliriz: 
-```{r, eval=FALSE, echo=TRUE}
+```{r, eval=FALSE}
 getwd()
 ```
 
 Bunu değiştirmek istersek `setwd("/tam/adres/")` komutunu kullanabiliriz. Dizin adresinde `\` yerine `/` kullanıldığına dikkat ediniz: 
-```{r, eval=FALSE, echo=TRUE}
+```{r, eval=FALSE}
 setwd("C:/Users/Folder/Another-Folder/makine-ogrenmesi")
 ```
 
@@ -195,14 +197,14 @@ z
 ```
 
 Hafızadaki tüm nesneleri görmek için 
-```{r, echo=TRUE}
+```{r}
 ls()
 ```
 
 `RStudio`'da sağ üst pencerede `Environment` altında tüm nesneler görülebilir. 
 
 `rm(x)` komutu `x` nesnesini hafızadan siler. Tüm nesneleri silmek istersek
-```{r, echo=TRUE}
+```{r}
 rm(list=ls())
 ls()
 ```
@@ -239,7 +241,7 @@ length(score)
 
 
 Yaygın kullanılan vektör fonksiyonları: 
-```{r, eval=TRUE}
+```{r}
 # vektörün eleman sayısı 
 length(a)
 # sırala
@@ -349,7 +351,7 @@ score[score_less_than70]
 ## Matrisler 
 
 `R`'da matris oluşturmanın en kolay yolu `matrix()` fonksiyonudur. Score vektöründen hareketle $10\times 1$ matris oluşturalım:  
-```{r, echo=TRUE, results="hold"}
+```{r, results="hold"}
 A <- matrix(data=score, nrow=10, ncol=1, byrow=FALSE, dimnames=NULL)
 print(A)
 dim(A)
@@ -369,7 +371,7 @@ t(B)
 ```
 
 Oluşturduğumuz B matrisinde NA'nın pozisyonu?
-```{r, echo=TRUE}
+```{r}
 is.na(B)
 # the position of NA
 which(is.na(B))
@@ -385,13 +387,13 @@ which(is.na(C))
 
 
 Bazen boş ya da tüm değerleri 0 olan bir matris yaratmak isteriz. Bunun için
-```{r, echo=TRUE}
+```{r}
 zeros <- matrix(data = 0, nrow = 5, ncol = 5)
 zeros
 ```
 
 Matris oluşturmanın başka bir yolu da mevcut vektörlerin birleştirilmesidir. Bunun için `cbind` ve `rbind` kullanılabilir. Örneğin,
-```{r, echo=TRUE, results="hold"}
+```{r, results="hold"}
 x <- cbind(b,a)
 x
 # also check out the following
@@ -399,7 +401,7 @@ cbind(1,1:5)
 ```
 
 Bireylerin cinsiyetini içeren bir karakter vektörü oluşturalım: 
-```{r, echo=TRUE, results="hold"}
+```{r, results="hold"}
 gender <- c("Female", "Male", "Female", "Female", "Male", "Female", "Male", "Male", "Female", "Female")
 print(gender) 
 table(gender)
@@ -415,12 +417,12 @@ Yukarıda `x`'in tüm elemanları karakter tipine zorlandı. Bunun nedeni R'da v
 
 Oluşturduğumuz nesneleri daha sonra kullanmak amacıyla `.RData` uzantısıyla saklayabiliriz. 
 ```{r}
-save(score, gender, B, b, x, file = "verilerim1.RData")
+save(score, gender, B, b, x, file = "Data/verilerim1.RData")
 ```
 
 Yeniden kullanmak istediğimizde:  
 ```{r}
-load("verilerim1.RData")
+load("Data/verilerim1.RData")
 ```
 
 `R`'da en temel nesnelerden biri `data frame`'dir. Aynı uzunlukta ve farklı tipte vektörleri bir araya getirmemize olanak tanır. Örneğin
@@ -436,7 +438,7 @@ summary(mydata)
 ## Mantıksal vektörler
 
 Yukarıda belirttiğimiz gibi, `TRUE` ve `FALSE` rezerve kelimelerdir. Arka planda bu kelimelerin karşılığı nümerik olarak  `TRUE` (T) için 1 `FALSE` (F) için 0'dır. Örneğin, 
-```{r, echo=TRUE}
+```{r}
 # logical operators, ==, !=, >, <, >=, <=
 0 == 0
 0 == 1
@@ -446,15 +448,15 @@ a >= 3
 ```
 
 Mantıksal vektörleri `logical()` fonksiyonuyla ya da koşullu ifade ve işlemcilerle oluşturabiliriz. Örneğin, 
-```{r, echo=TRUE}
+```{r}
 # logical creates a vector in which each element is zero
 logical(5)
 ```
-```{r, echo=TRUE}
+```{r}
 # Which observations are Male
 gender=="Male"
 ```
-```{r, echo=TRUE, results="hold"}
+```{r, results="hold"}
 # indicate scores higher than or equal to 75
 ind <- (score>=75)
 cbind(score, ind)
@@ -487,13 +489,10 @@ mylist$A[1]
 
 ## Eğri çizimi
 
-Temel R'da bunun için `curve()` kullanılabilir. Yardım dosyasına ulaşmak için
-```{r, eval=FALSE}
-?curve
-```
+Temel R'da bunun için `curve()` kullanılabilir. Yardım dosyasına ulaşmak için bkz. `?curve`.  
 
 Örnekler: 
-```{r, echo=TRUE}
+```{r}
 # a linear function
 curve(1+2*x, from=-2, to=2, xlab="x", ylab="" )
 # add a quadratic function
@@ -504,13 +503,13 @@ curve(1+2*x-2*x^2+3*x^3, add = TRUE, col = "blue" )
 ```
 
 Kendi cebirsel fonksiyonlarımızı `function()` ile oluşturup  `curve()` ya da `plot()` yardımıyla çizebiliriz:  
-```{r, echo=TRUE}
+```{r}
 # fonksiyonu tanımla
 fun1 <- function(x) 2*sin(x)+cos(x)
 # eğriyi çiz
 curve(fun1, -pi, pi, n = 100) 
 ```
-```{r, echo=TRUE}
+```{r}
 # focus on the interval -2 < x < 2
 plot(fun1, -2, 2)
 ```
@@ -527,7 +526,7 @@ data(wage1)
 ```
 
 
-```{r, echo=TRUE} 
+```{r} 
 wage <- wage1$wage
 hist(wage) 
 ```
@@ -540,13 +539,13 @@ hist(log(wage))
 Ham verilere kıyasla `log(wage)` daha simetrik bir dağılıma sahiptir. 
 
 Eğitimin histogramı: 
-```{r, echo=TRUE}
+```{r}
 educ <- wage1$educ
 hist(educ) 
 ```  
 
 Düzleştirilmiş histogram:  
-```{r, echo=TRUE}
+```{r}
 hist(wage, freq = FALSE, ylim = c(0, 0.25), xlim = c(0,20))
 lines(density(wage))
 ```
@@ -560,13 +559,13 @@ gghistogram(log(wage), add = "mean")
 
 ## Kutu çizimi (Box plot)
 
-```{r, echo=TRUE} 
+```{r} 
 boxplot(wage, horizontal=TRUE)
 ```
 
 
 Tukey'nin 5-sayı özeti ile birlikte yorumlanmalıdır:  
-```{r, echo=TRUE} 
+```{r} 
 # min Q1 median Q3 max
 fivenum(wage)
 summary(wage)
@@ -592,18 +591,18 @@ plot(ecdf(wage))
 ## Serpilme çizimi (Scatter Plot)
 
 Ücret ve eğitim düzeyinin serpilme çizimi:  
-```{r, echo=TRUE} 
+```{r} 
 plot(educ, wage) 
 ```
 
 Aynı grafiğin başka bir versiyonu:  
-```{r, echo=TRUE} 
+```{r} 
 plot(educ,wage, main="A Scatterplot", col=rgb(0,100,0,50,maxColorValue=255), pch=16)
 ```
 
 
 İki değişken arasındaki korelasyon katsayısı:  
-```{r, echo=TRUE} 
+```{r} 
 cor(wage,educ)
 ```
 
@@ -647,18 +646,18 @@ prop.table(table(marriage))
 
 ### Çubuk grafiği (Bar plot)
 
-```{r, echo=TRUE}
+```{r}
 ## Bar plot of marriage rating 
 barplot(table(marriage))
 ```
 
 
-```{r, echo=TRUE}
+```{r}
 ## Bar plot of marriage rating by kids
 barplot(table(haskid, marriage))
 ```
 
-```{r, echo=TRUE}
+```{r}
 ## Bar plot of marriage rating by kids.
 barplot(table(haskid, marriage), horiz = TRUE, las=1, legend=TRUE, cex.names=0.55,
         cex.axis = 0.55, args.legend =list(x="right", cex=0.5), col = blues9,
@@ -667,7 +666,14 @@ barplot(table(haskid, marriage), horiz = TRUE, las=1, legend=TRUE, cex.names=0.5
 
 ### Pasta grafiği 
 
-```{r, echo=TRUE}
+```{r}
 ## Pie chart of marriage rating.
 pie(table(marriage), col = blues9)
 ```
+
+
+
+<br>
+<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 0;"></div>
+
+

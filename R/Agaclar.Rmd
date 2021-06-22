@@ -1,25 +1,26 @@
 ---
 title: "Ağaç Bazlı Yöntemler"
-author: "Prof. Dr. Hüseyin Taştan"
-date: "Ağustos 2020"
+subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
+author: 
+  name: "Prof. Dr. Hüseyin Taştan"
+  affiliation: "Yıldız Teknik Üniversitesi"
+date: "Haziran 2021"
 output:
   html_document: 
     number_sections: true
-    theme: readable
+    theme: lumen
     highlight: haddock 
     # code_folding: show
     toc: yes
     toc_depth: 3
     toc_float: yes
-    keep_md: true
-subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2020)
-institute: Yıldız Teknik Üniversitesi
-
-
+    keep_md: false
 ---
 <style type="text/css"> 
 body{
-  font-size: 12pt;
+  background-color: #FAFAFA;
+  font-size: 18px;
+  line-height: 1.8;
 }
 code.r{
   font-size: 12pt;
@@ -28,21 +29,21 @@ code.r{
 
 ```{r setup, include=FALSE}
 # knitr::opts_chunk$set(echo = TRUE, results = 'asis', fig.show = 'asis')
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ``` 
 
 <br/>
 <br/>
 
+
 # R ile Sınıflandırma Ağaçları
  
 `R`'da ağaç tahmini için çok sayıda paket vardır. Bunlardan biri hem regresyon hem de sınıflama ağaçlarının tahminini yapan `tree` paketidir. Burada örnek olarak  `Carseats` veri setini kullanacağız. `Sales` değişkeni 8 değeri kullanılarak ikili kategorik değişkene dönüştürülmüştür: 
-```{r, echo=TRUE, results="hold", warning=FALSE}
+```{r, warning=FALSE}
 library(tree)
 library(ISLR)
 attach(Carseats)
-High <- ifelse(Sales<=8, "No", "Yes")
-Carseats <- data.frame(Carseats, High)
+Carseats$High <- factor(ifelse(Carseats$Sales<=8,"No","Yes"))  
 ```
 
 `High` Satışlar 8'den büyükse "Yes" (1) değilse "No" (0) değerini almaktadır. 
@@ -56,12 +57,12 @@ summary(tree.carseats)
 Eğitim hata oranı %9 olarak bulunmuştur (misclassification error rate).
 
 Tahmin edilen ağacın yaprak sayısı 27'dir (terminal node): 
-```{r, echo=TRUE, results="hold"}
+```{r}
 plot(tree.carseats)
 text(tree.carseats, pretty=0)
 ```
 
-Satışların yüksekliğni etkileyen en önemli değişken raf yeridir (`ShelveLoc`, **B**ad, **G**ood, **M**edium). İlk düğümde Kötü ve Orta kalitedeki raf lokasyonları İyi raf lokasyonundan ayrılmaktadır. 
+Satışların yüksekliğini etkileyen en önemli değişken raf yeridir (`ShelveLoc`, **B**ad, **G**ood, **M**edium). İlk düğümde Kötü ve Orta kalitedeki raf lokasyonları İyi raf lokasyonundan ayrılmaktadır. 
 
 Ağacın tüm detayları: 
 ```{r}
@@ -74,13 +75,13 @@ Test hata oranı:
 set.seed(2)
 train <- sample(1:nrow(Carseats), 200)
 Carseats.test <- Carseats[-train,]
-High.test <- High[-train]
-tree.carseats <- tree(High ~ . -Sales, Carseats, subset = train)
+High.test <- Carseats$High[-train]
+tree.carseats <- tree(High ~ . -Sales, Carseats, subset=train)
 tree.pred <- predict(tree.carseats, Carseats.test, type="class")
 table(tree.pred, High.test)
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 # correct prediction rate
 (104+50)/200
 ```
@@ -102,7 +103,7 @@ plot(cv.carseats$size, cv.carseats$dev, type="b")
 plot(cv.carseats$k, cv.carseats$dev, type="b")
 ```
 
-Şimde `prune.misclass()` fonksiyonunu kullanarak ağacı budayabiliriz: 
+Şimdi `prune.misclass()` fonksiyonunu kullanarak ağacı budayabiliriz: 
 ```{r}
 prune.carseats <- prune.misclass(tree.carseats, best=8)
 plot(prune.carseats)
@@ -175,15 +176,19 @@ Test MSE = 18.93.
 # Bagging ve Rassal Ormanlar 
 
 Örnek veri seti = `Boston`. Bagging ve rassal ormanlar için R `randomForest` 
-paketi kullanılabilir. Bagging rassal ormanların özel bir haliydi (m = p). Bagging tahmini: 
+paketi kullanılabilir. Bagging rassal ormanların özel bir halidir (m = p). Bagging tahmini: 
 ```{r, warning=FALSE}
 library(randomForest)
 set.seed(1)
-bag.boston <- randomForest(medv ~ ., data = Boston, subset=train, mtry=13, importance=TRUE)
+bag.boston <- randomForest(medv ~ ., 
+                           data = Boston, 
+                           subset = train, 
+                           mtry=13, 
+                           importance=TRUE)
 bag.boston
 ```
 
-`mtry=13` opsiyonu: 13 değişkenin tamamı her ayırımda dikkate alınacak (bagging). Modelin test setindeki performansı: 
+`mtry=13` ayarlanma parametresi = 13 değişkenin tamamı her ayırımda dikkate alınacak (bagging). Modelin test setindeki performansı: 
 ```{r}
 yhat.bag <- predict(bag.boston, newdata = Boston[-train,])
 plot(yhat.bag, boston.test)
@@ -195,16 +200,25 @@ Test MSE = 10.13872.
 
 `randomForest()` fonksiyonunda `ntree` opsiyonu ile ağacın büyüklüğünü değiştirebiliriz:
 ```{r}
-bag.boston <- randomForest(medv ~ ., data = Boston, subset = train, mtry=13, ntree=25)
-yhat.bag <- predict(bag.boston, newdata=Boston[-train,])
+bag.boston <- randomForest(medv ~ ., 
+                           data = Boston, 
+                           subset = train, 
+                           mtry=13, 
+                           ntree=25)
+yhat.bag <- predict(bag.boston, newdata = Boston[-train,])
 mean((yhat.bag-boston.test)^2)
 ```
 
-Rassal orman tahmini de benzer adımalara sahiptir. Ancak bu durumda daha küçük bir `mtry` değeri kullanırız. Default olarak `randomForest()` fonksiyonu $p/3$ değişkeni kullanır (sınıflama için 
+Rassal orman tahmini de benzer adımlara sahiptir. Ancak bu durumda daha küçük bir `mtry` değeri kullanırız. Default olarak `randomForest()` fonksiyonu $p/3$ değişkeni kullanır (sınıflama için 
 $\sqrt{p}$). Aşağıda `mtry = 6` kullanılmıştır: 
 ```{r}
+# random forest prediction
 set.seed(1)
-rf.boston <- randomForest(medv ~ ., data=Boston, subset=train, mtry=6, importance=TRUE)
+rf.boston <- randomForest(medv ~ ., 
+                          data = Boston, 
+                          subset = train, 
+                          mtry=6, 
+                          importance = TRUE)
 yhat.rf <- predict(rf.boston, newdata=Boston[-train,])
 mean((yhat.rf-boston.test)^2)
 ```
@@ -230,8 +244,11 @@ Boosting (takviye) yöntemi için `gbm` paketindeki `gbm()` fonksiyonu kullanıl
 ```{r, warning=FALSE}
 library(gbm)
 set.seed(1)
-boost.boston <- gbm(medv ~ ., data = Boston[train,], distribution = "gaussian",
-                    n.trees = 5000, interaction.depth=4)
+boost.boston <- gbm(medv ~ ., 
+                    data = Boston[train,], 
+                    distribution = "gaussian",
+                    n.trees = 5000, 
+                    interaction.depth=4)
 summary(boost.boston)
 ```
 
@@ -328,7 +345,7 @@ mean(prederror1, na.rm = TRUE)
 # 1 - mean(predict(titanic_tree) == titanic_tree_data$Survived, na.rm = TRUE)
 ```
 
-Bu basit ağaçla bile hata oranı yaklaşık % 21. 
+Bu basit ağaçla bile hata oranı yaklaşık % 21 olarak bulundu. 
 
 Veri setinde yer alan diğer öznitelikleri de kullanarak daha karmaşık bir ağaç tahmin edelim. Önce karakter değişkenleri faktör değişkenine dönüştürelim: 
 ```{r}
@@ -348,13 +365,13 @@ titanic_tree_full
 
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 plot(titanic_tree_full,  ip_args = list(pval = FALSE, id = FALSE),
      tp_args = list( id = FALSE) )
 ```
 
 Hata oranı: 
-```{r, echo=TRUE, results="hold"}
+```{r}
 # error rate
 1 - mean(predict(titanic_tree_full) == titanic_tree_data$Survived,
          na.rm = TRUE)
@@ -384,30 +401,33 @@ titanic_rf
 
 
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 str(titanic_rf, max.level = 1)
 # Info on the final model: 
 titanic_rf$finalModel
 ```
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 # confusion table 
 knitr::kable(titanic_rf$finalModel$confusion)
 ```
 
 
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 # look at an individual tree
 randomForest::getTree(titanic_rf$finalModel, labelVar = TRUE)
 ```
 
 
 
-```{r, echo=TRUE, results="hold"}
+```{r}
 # var importance plot 
 randomForest::varImpPlot(titanic_rf$finalModel)
 ```
 
 
+
+<br>
+<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 0;"></div>
 

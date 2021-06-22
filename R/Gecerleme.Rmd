@@ -1,25 +1,26 @@
 ---
 title: "Geçerleme Yaklaşımı"
-author: "Prof. Dr. Hüseyin Taştan"
-date: "Ağustos 2020"
+subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
+author: 
+  name: "Prof. Dr. Hüseyin Taştan"
+  affiliation: "Yıldız Teknik Üniversitesi"
+date: "Haziran 2021"
 output:
   html_document: 
     number_sections: true
-    theme: readable
+    theme: lumen
     highlight: haddock 
     # code_folding: show
     toc: yes
     toc_depth: 3
     toc_float: yes
-    keep_md: true
-subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2020)
-institute: Yıldız Teknik Üniversitesi
-
-
+    keep_md: false
 ---
 <style type="text/css"> 
 body{
-  font-size: 12pt;
+  background-color: #FAFAFA;
+  font-size: 18px;
+  line-height: 1.8;
 }
 code.r{
   font-size: 12pt;
@@ -28,7 +29,7 @@ code.r{
 
 ```{r setup, include=FALSE}
 # knitr::opts_chunk$set(echo = TRUE, results = 'asis', fig.show = 'asis')
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ``` 
 
 <br/>
@@ -96,7 +97,7 @@ lm.fit3 <- lm(mpg~poly(horsepower,3), data = Auto, subset = train)
 mean((Auto$mpg-predict(lm.fit3,Auto))[-train]^2)
 ```
 
-Bu sonçlara göre en düşük test kestirim hatasını veren model karesel modeldir. Acaba sonuçlar geçerleme kümesine ne kadar duyarlı? 
+Bu sonuçlara göre en düşük test kestirim hatasını veren model karesel modeldir. Acaba sonuçlar geçerleme kümesine ne kadar duyarlı? 
 
 
 Yeni bir geçerleme veri kümesi oluşturup test MSE hesaplayalım: 
@@ -189,9 +190,9 @@ plot(cv.error.10, type = "b")
 
 # Bootstrap 
 
-Bootstrap tekniğinin uygulanması oldukça basittir. Bunun için ilgilendiğimiz istatistik ya da tahminciyi hesaplayan bir fonksiyona ve elimizdeki verilerden yerine koymalı örnekleme yapabilen ayrı bir fonksiyona ihtiyacımız vardır.  
+Bootstrap tekniğinin uygulanması oldukça basittir. Bunun için ilgilendiğimiz istatistik ya da tahminciyi hesaplayan bir fonksiyona ve elimizdeki verilerden *yerine koymalı örnekleme* yapabilen ayrı bir fonksiyona ihtiyacımız vardır.  
 
-Örnek olarak Efron, B. ve R. Tibshrani'nin makalelerinde kullandıkları verileri ele alalım (bkz. "Bootstrap Methods for Standard Errors, Confidence Intervals and Other measures of Statisical Accuracy." Statistical Science, 1(1986): 54-77).
+Örnek olarak yöntemi öneren Efron, B. ve R. Tibshrani'nin orijinal makalelerinde kullandıkları verileri ele alalım (bkz. "Bootstrap Methods for Standard Errors, Confidence Intervals and Other measures of Statisical Accuracy." Statistical Science, 1(1986): 54-77).
 
 Bu veri setinde ABD'deki 15 hukuk fakültesinin 1973 yılı ortalama LSAT puanları ile GPA değerleri yer almaktadır:  
 ```{r}
@@ -227,7 +228,7 @@ summary(bootsample)
 Bootstrap standart hatası 0.1275 olarak tahmin edilmiştir (yukarıda referansını verdiğimiz makaledeki sonuçla pratik olarak aynıdır). Bootstrap ortalamasının, 0.7803, örneklem korelasyon katsayısı, 0.776, ile örtüştüğüne dikkat ediniz. 
 
 
-`R` `boot()` fonksiyonu yukarıdaki hesaplamayı otomatikleştirir. Ancak bunun için öncelikle bir fonksiyon yazmalıyız. Aşağıdaki örnekte `corboot()` fonksiyonu örneklem korelasyon katsayısını, gözlem numaralarını içeren `index` kümesini kullanarak hesaplar ve çıktı olarak verir. Daha fazla detay için `boot()` Help dosyasına bakılabilir.
+`R` `boot()` fonksiyonu yukarıdaki hesaplamayı otomatikleştirir. Ancak bunun için öncelikle bir fonksiyon yazmalıyız. Aşağıdaki örnekte `corboot()` fonksiyonu örneklem korelasyon katsayısını, gözlem numaralarını içeren `index` kümesini kullanarak hesaplar ve çıktı olarak verir. Daha fazla detay için `boot()` yardım dosyasına bakılabilir.
 ```{r}
 # örneklem istatistiğini hesaplayan jenerik fonksiyon
 corboot <- function(data, index){
@@ -245,7 +246,7 @@ Bootstrap standart hatası 0.131 olarak tahmin edilmiştir.
 
 ## Regresyon Modelinde Bootstrap Standart Hataları
 
-Bootstrap tekniği bir makine öğrenmesi yönteminin katsayı tahminlerindeki değişkenliğin ölçülmesinde kullanılabilir. Örneğin doğrusal regresyon modelinde katsayı tahminlerinin standart hataları bootstrap yaklaşımı ile hesaplanabilir. Kesit veri setinin ilgili anakütleden iid örnekleme ile çekildiği varsayımını yapıyoruz. Bu yaklaşım ölçümler arasında bağımlılığın olduğu zaman serilerine burada ele aldığımız yalın haliyle uygulanamaz. Zaman serileri için geliştirilmiş daha karmaşık bootstrap yöntemleri vardır (burada değinmeyeceğiz). 
+Bootstrap tekniği bir makine öğrenmesi yönteminin katsayı tahminlerindeki değişkenliğin ölçülmesinde kullanılabilir. Örneğin doğrusal regresyon modelinde katsayı tahminlerinin standart hataları bootstrap yaklaşımı ile hesaplanabilir. Kesit veri setinin ilgili anakütleden bağımsız ve türdeş (iid) örnekleme ile çekildiği varsayımını yapıyoruz. Bu yaklaşım ölçümler arasında bağımlılığın olduğu zaman serilerine burada ele aldığımız yalın haliyle uygulanamaz. Zaman serileri için geliştirilmiş daha karmaşık bootstrap yöntemleri vardır (burada değinmeyeceğiz). 
 
 Sıradan en küçük kareler (OLS) tahmincilerinin standart hata formülleri incelenirse bu formüllerin bazı varsayımlar altında geçerli olduğu kolayca görülebilir. Bunlardan en önemlisi hata teriminin varyansının, $\sigma^2$, sabit olmasıdır. Değişen varyans (heteroskedasticity) durumunda veya modelde dikkate alınmamış doğrusal olmayan ilişkiler varsa bu standart hata formülleri geçerli olmaz. Bootstrap yöntemi ise bu varsayımlara dayanmaz. Yani değişen varyans altında da geçerlidir.  
 
@@ -257,7 +258,7 @@ boot.fn <- function(data, index)
 boot.fn(Auto,1:392)
 ```
 
-Yerine koymalı boostrap örnekleri: 
+Yerine koymalı bootstrap örnekleri: 
 ```{r}
 set.seed(1)
 # 1. bootstrap 
@@ -271,14 +272,14 @@ boot.fn(Auto, sample(392, 392, replace=T))
 boot(Auto, boot.fn, 1000) 
 ```
 
-1000 replikasyonu sonucu tahmin edilen katsayı standart hataları sabit için 0.845, eğim katsayısı için 0.0073'dür. OLS ile kıyaslayalım:  
+1000 tekrar sonucu tahmin edilen katsayı standart hataları sabit için 0.845, eğim katsayısı için 0.0073'dür. OLS ile kıyaslayalım:  
 ```{r} 
 summary(lm(mpg ~ horsepower, data=Auto))$coef
 ```
 
 OLS standart hataları daha düşüktür. Ancak doğrusal modelin iyi bir uyum sergilemediği düşünülürse bootstrap standart hatalarının daha sapmasız bir standart hata tahmini verdiğini söyleyebiliriz. 
 
-`mpg` için karesel model daha başarılı bir uyum göstermişti. Bu model için bootstrap stanart hataları hesaplayalım: 
+`mpg` için karesel model daha başarılı bir uyum göstermişti. Bu model için bootstrap standart hataları hesaplayalım: 
 ```{r}
 boot.fn2 <- function(data, index)
   coefficients(lm(mpg ~ horsepower + I(horsepower^2), data = data, subset=index))
@@ -291,4 +292,9 @@ OLS sonuçları ile kıyaslayınız:
 summary(lm(mpg~horsepower+I(horsepower^2),data=Auto))$coef
 ```
 
+
+
+
+<br>
+<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 0;"></div>
 

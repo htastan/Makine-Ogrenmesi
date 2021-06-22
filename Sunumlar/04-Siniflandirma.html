@@ -4,6 +4,7 @@
     <title>Sınıflandırma Problemleri</title>
     <meta charset="utf-8" />
     <meta name="author" content="Hüseyin Taştan" />
+    <script src="libs/header-attrs-2.8/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
   </head>
@@ -12,7 +13,7 @@
 class: center, middle, inverse, title-slide
 
 # Sınıflandırma Problemleri
-## (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2020)
+## (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
 ### Hüseyin Taştan
 ### Yıldız Teknik Üniversitesi
 
@@ -46,11 +47,11 @@ class: my-medium-font
 
 - Doğrusal Diskriminant Analizi (LDA)
 
-- Karesel Diskriminant Analizi (QDA)
-
 - Sınıflandırma performansının ölçümü 
 
 - ROC eğrisi ve AUC
+
+- Karesel Diskriminant Analizi (QDA)
 
 ---
 # Sınıflandırma Problemi 
@@ -75,7 +76,7 @@ kestiren yöntem.
 Mavi: Default=NO, Kavuniçi: Default=YES (ISLR Fig-4.1, p.129)
 
 ---
-# Regresyon kullanabilir miyiz? 
+# Doğrusal regresyon analizini kullanabilir miyiz? 
 
 * Standart regresyon analizi ile gözlemleri sınıflandırabilir miyiz? Burada iki sınıf olduğunu varsayıyoruz. Örneğin 
 `$$default = \beta_0 + \beta_1 income + \beta_2 balance + \epsilon$$`
@@ -112,9 +113,10 @@ Burada `\(p(X)=Pr(Y=1|X)\)` tepki değişkeninin grup=1 olarak sınıflandırıl
 ---
 # Lojistik Regresyonun Tahmini 
 
-* Modelin tahmininde OLS kullanılamaz. 
+* Modelin tahmininde sıradan en küçük kareler yöntemi (OLS) kullanılamaz. 
 
-* En Yüksek Olabilirlik (Maximum Likelihood) yöntemi tutarlı ve etkin tahminciler verir. 
+* En Yüksek Olabilirlik (Maximum Likelihood) yöntemi tutarlı ve etkin tahminciler verir. Bu yöntemde olabilirlik en yüksek yapılarak parametreler tahmin edilir:  
+`$$\ell\left(\beta_{0}, \beta_{1}\right)=\prod_{i: y_{i}=1} p\left(x_{i}\right) \prod_{i^{\prime}: y_{i^{\prime}}=0}\left(1-p\left(x_{i^{\prime}}\right)\right)$$`
 
 * Katsayılar bulunduktan sonra koşullu olasılıklar hesaplanabilir. 
 
@@ -465,6 +467,32 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     deleted = true;
   });
 })();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
 // adds .remark-code-has-line-highlighted class to <pre> parent elements
 // of code chunks containing highlighted lines with class .remark-code-line-highlighted
 (function(d) {
@@ -482,17 +510,6 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   }
   preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
 })(document);</script>
-
-<script>
-(function() {
-  var links = document.getElementsByTagName('a');
-  for (var i = 0; i < links.length; i++) {
-    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
-      links[i].target = '_blank';
-    }
-  }
-})();
-</script>
 
 <script>
 slideshow._releaseMath = function(el) {

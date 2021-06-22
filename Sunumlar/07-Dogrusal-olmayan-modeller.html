@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Doğrusal Olmayan Modeller</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Hüseyin Taştan" />
+    <script src="libs/header-attrs-2.8/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Doğrusal Olmayan Modeller
+## (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
+### Hüseyin Taştan
+### Yıldız Teknik Üniversitesi
+
+---
+
+
+&lt;style type="text/css"&gt;
+.remark-slide-content {
+    font-size: 28px;
+    padding: 1em 4em 1em 4em;
+}
+.my-large-font {
+  font-size: 40px;
+}
+.my-small-font {
+  font-size: 20px;
+}
+.my-medium-font {
+  font-size: 25px;
+}
+&lt;/style&gt;
+
+
+
+# Plan
+
+- [Doğrusal ve Doğrusal Olmayan Modeller](#linvsnonlin)
+- [Polinom regresyonu](#poly) 
+- [Adım fonksiyonu](#step) 
+- [Baz fonksiyonları](#basis) 
+- [Spline regresyonu](#splines)
+- [Doğal Spline'lar](#natural) 
+- [Düzleştirme Spline'ları](#smoothing)
+- [Lokal regresyon](#local) 
+- [Genelleştirilmiş Toplamsal Modeller (GAMs)](#gams)
+
+---
+class: my-medium-font
+name: linvsnonlin
+
+# Doğrusal ve Doğrusal Olmayan Modeller 
+Model: `\(y = f(x) + u\)`, burada `\(f(x)\)` ilişkinin formunu belirler 
+.pull-left[
+Doğrusal modeller:
+- `\(f(x) = \beta_0 + \beta_1 x\)`
+- Hem parametrelerde hem de değişkenlerde doğrusal
+- Pratikte iyi bir başlangıç noktası olabilir, ancak kestirim performansı çok başarılı olmayabilir
+- Ancak çeşitli genelleştirmelerle iyileştirilebilir.
+] 
+.pull-right[
+Doğrusal olmayan modeller
+- `\(f(x)\)` `\(x\)`'in herhangi bir fonksiyonu olabilir. Daha esnek bir çerçeve sunar. 
+- Polinom regresyonu
+- Adım fonksiyonu
+- Regresyon spline'ları
+- Düzleştirme spline'ları 
+- Yerel (local) regresyon 
+- Genelleştirilmiş Toplamsal Modeller (Generalized Additive Models - GAMs)
+- ... ve diğerleri (yapay sinir ağları, destek vektör makineleri, ağaçlar, vb.)
+]
+
+---
+name: poly
+
+# Polinom Regresynu
+
+- Basitlik amacıyla sadece bir kestirim değişkeni, `\(x\)`, olsun. Derecesi `\(d\)` olan bir polinom aşağıdaki gibi yazılabilir:  
+`$$y = \beta_0 + \beta_1 x + \beta_2 x^2 + \ldots + \beta_d x^d + \epsilon$$`
+
+- Modele kestirim değişkeninin `\(d\)` kuvvetini ekledik. 
+
+- Model hala parametrelerde doğrusal olduğu için sıradan en küçük kareler (OLS) yöntemi kullanabiliriz. 
+
+- Polinom derecesi, `\(d\)`, modelin karmaşıklığını belirleyen bir ayarlanma parametresi olarak düşünülebilir. 
+- Pratikte `\(d\)` geçerleme yaklaşımı ile seçilebilir. 
+
+---
+# Örnek: Ücret-yaş ilişkisi için 4. derece polinom regresyonu
+
+`$$\widehat{wage} = \hat{\beta}_0 + \hat{\beta}_1 ~age + \hat{\beta}_2~age^2 + \hat{\beta}_3~age^3 + \hat{\beta}_4~ age^4$$`
+.pull-left[
+![](img/nonlin1.PNG)
+]
+.pull-right[
+- Mavi kesiksiz çizgi tahmin edilen eğridir (%95 güven aralığı ile birlikte verilmiştir).
+- Yüksek ücrete sahip bir grup mevcuttur (yıllık kazancı 250.000 USD üzerinde olanlar)
+- Bu grubu nasıl modelleyebiliriz?
+]
+
+
+---
+# Polinom terimli lojistik regresyon
+
+- Polinom regresyonuna benzer şekilde bir lojistik regresyon sınıflandırma modeli kurabiliriz. 
+- Örneğin yüksek ücretli grup için 
+`$$\operatorname{Pr}\left(y_{i}&gt;250 \mid x_{i}\right)=\frac{\exp \left(\beta_{0}+\beta_{1} x_{i}+\beta_{2} x_{i}^{2}+\ldots+\beta_{d} x_{i}^{d}\right)}{1+\exp \left(\beta_{0}+\beta_{1} x_{i}+\beta_{2} x_{i}^{2}+\ldots+\beta_{d} x_{i}^{d}\right)}$$`
+Burada veriler ücret değişkenine göre kazancı 250 bin doların üzerinde olanlar ve olmayanlar şeklinde iki gruba ayrılmıştır. 
+
+- İzleyen grafik tahmin edilen olasılıkları ve %95 güven aralığını göstermektedir. 
+
+---
+# Örnek: polinom terimli lojistik regresyon
+
+![](img/nonlin2.PNG)
+
+Veri setinde sadece 79 yüksek ücretli gözlem yer almaktadır. Veri setinin küçük olması nedeniyle varyans yüksektir ve güven aralıkları geniştir. 
+
+---
+name: step
+
+# Adım fonksiyonu
+
+.pull-left[
+Gösterge (indicator) fonksiyonu:  `\(X\)` değişkeni için `\(c_1,c_2,\ldots,c_k\)` kesme noktalarını kullanarak `\(K+1\)` kategorik değişken oluşturulabilir: 
+`$$\begin{array}{ll}
+C_{0}(X) &amp; =I\left(X&lt;c_{1}\right) \\
+C_{1}(X) &amp; =I\left(c_{1} \leq X&lt;c_{2}\right) \\
+C_{2}(X) &amp; =I\left(c_{2} \leq X&lt;c_{3}\right) \\
+&amp; \vdots \\
+C_{K-1}(X) &amp; =I\left(c_{K-1} \leq X&lt;c_{K}\right) \\
+C_{K}(X) &amp; =I\left(c_{K} \leq X\right)
+\end{array}$$`
+]
+.pull-right[
+- Gösterge fonksiyonu, `\(I(\cdot)\)`, parantez içindeki olay doğruysa 1 değilse 0 değerini alır (doğru, yanlış). `\(c\)` kesme değerlerine göre kukla değişkenler yaratır. 
+- Örnek: `\(c_1=35\)`, `\(c_2=50\)`, `\(c_3=65\)`
+- `\(I(age&lt;35)=1\)`: 35 yaşından küçükler için 1 değerini alır, diğerleri için 0 olur. 
+Dikkat: her gözlem `\(C_0,C_1,…,C_K\)` gruplarından birine girmelidir.
+]
+
+---
+# Adım fonksiyonu
+
+- `\(X\)`'in herhangi bir değeri için 
+`$$C_0(X) + C_1(X) + \ldots + C_K(X) = 1$$`
+yazılabilir ($X$ değerleri `\(K+1\)` gruptan birinde yer almalıdır). 
+- Modelin tahmini OLS ile yapılır.  `\(C_1(X), C_2(X),\ldots, C_K(X)\)` kukla değişkenleri modele eklenir:
+`$$y_{i}=\beta_{0}+\beta_{1} C_{1}\left(x_{i}\right)+\beta_{2} C_{2}\left(x_{i}\right)+\ldots+\beta_{K} C_{K}\left(x_{i}\right)+\epsilon_{i}$$`
+- `\(\beta_0\)`: `\(X&lt;c_1\)` olduğunda `\(Y\)`'nin ortalaması 
+- `\(\beta_j\)`: `\(X&lt;c_1\)` grubuna kıyasla  `\(X\)` in `\(c_j\leq X&lt;c_{j+1}\)` grubunun `\(Y\)`'nin ortalamasına katkısı. 
+- İzleyen grafikte 35, 50 ve 65 kesme değerleri için adım fonksiyonu regresyonu gösterilmiştir.
+
+---
+class: my-small-font
+# Örnek: adım fonksiyonu  
+
+![](img/nonlin3.PNG)
+
+(source: ISLR Fig. 7.2, p.269)
+
+---
+name: basis
+
+# Baz fonksiyonları 
+
+- Polinomlar ve  parçalı-sabit regresyon modelleri (adım fonksiyonu) baz fonksiyonlarının özel bir durumu olarak düşünülebilir.  
+- Bir baz fonksiyonu ailesini, `\(b_1(X), b_2(X),\ldots,b_K(X)\)` ile göstereceğiz. Bu fonksiyonlar her `\(X\)` değerine uygulanır.  
+- Modelimizde orijinal `\(X\)` değerlerini değil baz fonksiyonlarını kullanacağız: 
+`$$y_{i}=\beta_{0}+\beta_{1} b_{1}\left(x_{i}\right)+\beta_{2} b_{2}\left(x_{i}\right)+\beta_{3} b_{3}\left(x_{i}\right)+\ldots+\beta_{K} b_{K}\left(x_{i}\right)+\epsilon_{i} .$$`
+- Polinom regresyonu için baz fonksiyonu: `\(b_j(x_i) = x_i^j\)`
+- Parçalı sabit regresyon: `\(b_j(x_i) =I(c_j\leq x_i &lt;c_{j+1})\)`
+- Çok sayıda alternatif mevcuttur: spline'lar, wavelet'ler, Fourier dizileri, ... 
+
+---
+# Parçalı polinomlar
+- Pratikte `\(X\)`'in tüm değerleri üzerine bir yüksek dereceli polinom regresyonu genellikle tercih edilmez. Alternatif olarak `\(X\)`'in bazı değer aralıkları için düşük dereceli polinom tahmin edilmesidir. .
+- `\(X\)`'in değer aralığı adım fonksiyonunda olduğu gibi alt aralıklara bölünür. Kesme noktalarına düğü (knot) adı verilir. 
+- Örneğin, `\(c\)` düğüm noktasını kullanarak bir parçalı kübik polinom modeli: 
+`$$y_{i}=\left\{\begin{array}{ll}
+\beta_{01}+\beta_{11} x_{i}+\beta_{21} x_{i}^{2}+\beta_{31} x_{i}^{3}+\epsilon_{i} &amp; \text { if } x_{i}&lt;c \\
+\beta_{02}+\beta_{12} x_{i}+\beta_{22} x_{i}^{2}+\beta_{32} x_{i}^{3}+\epsilon_{i} &amp; \text { if } x_{i} \geq c
+\end{array}\right.$$`
+
+- OLS ile tahmin edilebilir.  
+- Polinom derecesi değiştirilebilir veya istenen sayıda düğüm noktası oluşturulabilir. 
+
+---
+# Örnek: Kısıtlanmamış parçalı kübik polinom
+.pull-left[
+![](img/nonlin4.PNG)
+]
+.pull-right[
+- Ücret-yaş parçalı kübik polinom modeli (düğüm noktası age=50). 
+- Düğün noktasında süreksizlik var. 
+- Polinom modelini düğüm noktasında sürekli olacak şekilde kısıtlayabiliriz. 
+- Süreklilik kısıtının yanı sıra `\(d-1\)` türevin sürekli olmasını gerektiren düzgünlük kısıtını da koyabiliriz (smoothness) 
+]
+
+---
+# Örnek: Kısıtlanmış parçalı kübik polinom
+.pull-left[
+![](img/nonlin5.PNG)
+]
+.pull-right[
+- Düğüm noktasında (age=50) süreklilik kısıtı altında parçalı kübik polinom. 
+
+- Düğüm noktasında hala görünür bir değişim mevcut. 
+- Daha düzgün bir alternatif: spline'lar 
+]
+
+---
+name: splines
+
+# Örnek: spline 
+![](img/nonlin6.PNG)
+Kübik spline süreklilik şartını sağlar, ayrıca birinci ve ikinci türevleri de süreklidir. 
+&lt;small&gt;(Source: ISLR Fig. 7.3, p.272)&lt;small&gt;
+
+---
+# Doğrusal Spline
+
+-  `\(K\)` düğüm noktası, `\(\xi_k\)`, `\(k=1,2,\ldots,K\)`, için doğrusal spline aşağıdaki gibi yazılabilir: 
+`$$y_{i}=\beta_{0}+\beta_{1} x_{i}+\beta_{2} (x_i-\xi_1)_{+} + \beta_{3} (x_i-\xi_2)_{+} +\ldots + \beta_{1+K} (x_i-\xi_K)_{+} + \epsilon_{i}$$`
+&lt;!-- where `\(b_k\)` are basis functions --&gt;
+&lt;!-- $$\begin{aligned} --&gt;
+&lt;!-- b_{1}\left(x_{i}\right) &amp;=x_{i} \\ --&gt;
+&lt;!-- b_{k+1}\left(x_{i}\right) &amp;=\left(x_{i}-\xi_{k}\right)_{+}, \quad k=1, \ldots, K --&gt;
+&lt;!-- \end{aligned}$$ --&gt;
+Burada `\((\cdot)_+\)` pozitif kısmı gösterir:
+`$$(x-\xi)_{+} = \left\{\begin{array}{cl}
+(x-\xi) &amp; \text { if } x&gt;\xi \\
+0 &amp; \text { otherwise }
+\end{array}\right.$$`
+
+- Örneğin, 25, 40 , ve 60 yaşlarında düğün noktaları ile bir doğrusal spline: 
+`$$wage = \beta_0 + \beta_1 age + \beta_2 (age-25)_+ + \beta_3 (age-40)_+ + \beta_4 (age-60)_+ + \epsilon$$`
+Burada `\(K=3\)` düğüm noktası ve 5 parametre vardır.  
+
+---
+# Doğrusal spline: örnek 
+.pull-left[
+![](img/nonlin7.PNG)
+]
+.pull-right[
+- Global doğrusal fonksiyon `\(f(x) = \beta_0 + \beta_1 x\)` mavi ile gösterilmiştir. 
+- Düğüm noktası = 0.6: `\(f(x) = \beta_0 + \beta_1 x + \beta_2 (x-0.6)_+\)`
+- Baz fonksiyonu: `\(b(x) =(x-0.6)_+\)` (kavuniçi ile gösterilmiştir). 
+]
+
+- Dikkat edilirse baz fonksiyonu 0'da başlar ve düğüm noktasında sürekliliği sağlar. 
+- Global fonksiyon düğüm noktasında eğim değiştirir. 
+
+---
+# Kübik spline
+
+- `\(d\)` dereceli bir spline fonksiyonu aslında bir parçalı polinom fonksiyonudur ancak düğüm noktalarında türevleri süreklidir.
+- Bir kübik spline aşağıdaki gibi yazılabilir:  
+`$$y_{i}=\beta_{0}+\beta_{1} b_{1}\left(x_{i}\right)+\beta_{2} b_{2}\left(x_{i}\right)+\cdots+\beta_{K+3} b_{K+3}\left(x_{i}\right)+\epsilon_{i}$$`
+
+- Kübik spline baz fonksiyonu: modele `\(x,x^2, x^3\)` ile başlanır ve her bir düğüm noktası için kesilmiş baz kuvvet fonksiyonları eklenir: 
+`$$h(x, \xi)=(x-\xi)_{+}^{3}=\left\{\begin{array}{cl}
+(x-\xi)^{3} &amp; \text { if } x&gt;\xi \\
+0 &amp; \text { otherwise }
+\end{array}\right.$$`
+Burada  `\((\cdot)_+\)` pozitif kısmı gösterir. 
+
+---
+# Kübik spline
+
+- `\(K\)` düğüm noktaları belirlenmiş olsun. Bir kübik spline modelini OLS ile tahmin etmek için değişkenin kuvvetlerinin `\(X,X^2,X^3\)` yanı sıra `\(h(x, \xi_1)\)`, `\(h(x, \xi_2)\)`, `\(\ldots\)`, `\(h(x, \xi_K)\)` değerlerini de kestirim değişkeni olarak kullanırız. 
+- Bir kübik spline `\(4+K\)` serbestlik derecesine sahiptir (parametre sayısı) 
+- Örneğin ücret modelinde 25, 40, 60 düğüm noktaları ile:  
+`$$\begin{array}{ll}
+wage &amp; = &amp; \beta_0 + \beta_1 age + \beta_2 age^2 +  \beta_3 age^3 + \\
+       &amp; &amp; \beta_4 (age-25)_+^3  + \beta_5 (age-40)_+^3 + \beta_6 (age-60)_+^3 + \epsilon 
+\end{array}$$`
+Burada `\(K=3\)` ve toplamda 7 parametre vardır. 
+
+---
+# Kübik spline: örnek
+
+.pull-left[
+![](img/nonlin8.PNG)
+]
+.pull-right[
+- Kübik spline baz fonksiyonu (kavuniçi) düğün noktasında (0.6) süreklidir. 
+- Global fonksiyon düğüm noktasında düzgün bir şekilde eğim değiştirir. 
+]
+- 0.6 düğüm noktası ile bir kübik splineB
+`$$f(x) = \beta_0 + \beta_1 x + \beta_2 x^2 + \beta_3 x^3+\beta_4 (x-0.6)_+^3$$`
+---
+name: natural 
+
+# Doğal spline 
+.pull-left[
+![](img/nonlin9.PNG)
+]
+.pull-right[
+- Spline'lar X değer aralığının uçlarında yüksek değişkenliğe sahiptir. 
+- Bu değişkenlik grafikte güven bandındaki genişlemeden anlaşılabilir.
+- Bir doğal kübik spline sınırdaki düğüm noktalarının ötesinde doğrusal ekstrapolasyon yapar. 
+]
+- Sınır kısıtları: fonksiyon  age&lt;25 ve age&gt;60 için doğrusal olmaya zorlanır. 
+- Bu  4 = 2x2 ek kısıt getirir.  
+- Grafikten de görüleceği gibi doğal spline güven bandı daha dardır. 
+
+---
+# Düğümlerin yeri ve sayısının belirlenmesi 
+
+- Pratikte düğüm sayısına ve bu düğümlerin yerine karar vermemiz gerekir.
+- Temel ilke: fonksiyonun hızlıca değiştiği bölgelere daha fazla düğüm noktası yerleştir, fonksiyonun daha stabil olduğu bölgelere ise daha az. 
+- Diğer bir opsiyon düğüm noktasına karar verdikten sonra kullandığımız yazılımın otomatik olarak bunların yerlerini belirlemesidir (örneğin 25, 50, 75 yüzdelik dilimler).
+- Düğüm sayısının belirlenmesinde çapraz geçerleme yaklaşımı kullanılabilir. 
+
+---
+# Polinom regresyonu ve spline karşılaştırması 
+.pull-left[
+![](img/nonlin10.PNG)
+]
+.pull-right[
+- 15 dereceli bir polinom (mavi) ve doğal kübik spline (kırmızı) 
+- Polinom regresyonu özellikle sınırlarda yüksek değişkenliğe sahiptir.
+- Polinomlara kıyasla spline'lar daha istikrarlıdır. 
+- Spline'lar dereceyi sabit tutarken düğüm sayısını arttırarak daha esnek bir modelleme sunmaktadır. 
+]
+
+&lt;small&gt;(Source: ISLR Fig. 7.7, p.277)&lt;small&gt;
+
+---
+name: smoothing
+
+# Düzleştirme Spline'ları 
+- Regresyon spline'ları: bir baz fonksiyon kümesi tanımla ve modeli OLS ile tahmin et. 
+- Altarnatif yaklaşım: verilere en iyi uyumu veren `\(g(x)\)` gibi bir fonksiyon bul. Bunun için kalıntı kareleri toplamı, `\(RSS = \sum_{i=1}^{n}\left(y_{i}-g\left(x_{i}\right)\right)^{2}\)` en küçük yapılır. 
+- Ancak böyle bir problemde uygun kısıtlar konmazsa aşırı-uyum problemi ortaya çıkabilir. Bundan kaçınmak için fonksiyonun düzgün (smooth) olmasını isteriz. 
+- Bunu sağlamanın bir yolu amaç fonksiyonuna bir ceza terimi eklemektir: 
+`$$\sum_{i=1}^{n}\left(y_{i}-g\left(x_{i}\right)\right)^{2}+\lambda \int g^{\prime \prime}(t)^{2} d t$$`
+Burada `\(\lambda\)` negatif olmayan bir ayarlanma parametresidir. `\(g^{\prime \prime}(t)\)` ise `\(g(x)\)`'in ikinci türevidir. 
+
+---
+# Düzleştirme spline'ları (smoothing splines)
+
+- Problemin kayıp+ceza (Loss+Penalty) yapısına sahip olduğuna dikkat ediniz: 
+`$$\underbrace{\sum_{i=1}^{n}\left(y_{i}-g\left(x_{i}\right)\right)^{2}}_{Loss}+ \underbrace{\lambda \int g^{\prime \prime}(t)^{2} d t}_{Penalty}$$`
+- Bir fonksiyonun birinci türevi, `\(g^{\prime}(t)\)`, fonksiyonun `\(t\)` noktasındaki eğimini ölçer. 
+- İkinci türev, `\(g^{\prime \prime}(t)\)`, ise `\(t\)` noktasında eğimin ne kadar değiştiğini gösterir. 
+- Bu nedenle ikinci türev fonksiyonun ne kadar düzgün olduğunun veya olmadığının göstergesidir (roughness). Büyük değerler aldığında `\(t\)` noktasında fonksiyon hızlıca değişir. Aksi durumda sıfıra yakın değerler alır. 
+- İkinci türevin karesinin integrali, `\(\int g^{\prime \prime}(t)^{2} d t\)`, tüm değerler aralığı için `\(g^{\prime}(t)\)` fonksiyonundaki toplam değişimi gösterir. 
+
+---
+# Smoothing Splines 
+
+`$$\underbrace{\sum_{i=1}^{n}\left(y_{i}-g\left(x_{i}\right)\right)^{2}}_{Loss}+ \underbrace{\lambda \int g^{\prime \prime}(t)^{2} d t}_{Penalty}$$`
+- `\(g()\)` ne kadar düz ise `\(\int g^{\prime \prime}(t)^{2} d t\)` o kadar küçük değerler alır ve   `\(g^{\prime}(t)\)` sabit olur.  
+- Diğer taraftan, `\(g()\)` çok değişken ise `\(g^{\prime}(t)\)` fonksiyonu da değişken olur ve  `\(\int g^{\prime \prime}(t)^{2} d t\)` büyük değerler alır. 
+- Ceza terimi, `\(\lambda \int g^{\prime \prime}(t)^{2} d t\)`, fonksiyonun düzgün olmasını sağlar. `\(\lambda\)` parametresi ne kadar büyükse fonksiyon o kadar düzgün olur.  
+- `\(\lambda=0\)` olduğunda bir ceza uygulanmaz; sonuçta mükemmel uyum ortaya çıkar. 
+- `\(\lambda \rightarrow \infty\)` durumunda `\(g()\)` düzgünleşir ve limitte doğrusal olur. 
+
+---
+# Düzleştirme parametresinin seçimi 
+
+-  `\(\lambda\)` büyüdükçe fonksiyon doğrusala yaklaşır (en küçük kareler doğrusu) 
+- Ara değerler için fonksiyon `\(g(\cdot)\)`  eğitim verilerine düzgün bir şekilde uyumlanmaya çalışır. 
+- Ayarlanma parametresi `\(\lambda\)` düzleştirme spline'larının ne kadar değişken olduğunu kontrol eder ve efektif serbestlik derecesi ile ilişkilidir. 
+-  `\(\lambda\)`  0'dan `\(\infty\)`'a doğru değişirken efektif serbestlik derecesi `\(n\)`'den  2'ye doğru değişir. 
+- Düğüm noktası seçimine gerek yoktur. Sadece `\(\lambda\)` veya efektif serbestlik derecesinin seçimi yeterlidir. 
+- Bunun seçiminde çapraz geçerleme ya da LOOCV kullanılabilir.  
+
+---
+# Örnek 
+![](img/nonlin11.PNG)
+
+&lt;small&gt;(Source: ISLR Fig. 7.8, p.280)&lt;small&gt;
+
+---
+name: local 
+
+# Yerel Regresyon 
+
+- Adından da anlaşılacağı gibi yerel regresyon hedef `\(x_0\)` noktasının belirli bir komşulugundaki gözlemleri kullanır.  
+- Bir ağırlıklandırma fonksiyonu yardımıyla hedef noktaya yakın gözlemlere daha fazla ağırlık verilir.  
+- Bu ağırlık fonksiyonun kernel fonksiyonu da denir: 
+`$$K_{i 0}=\frac{1}{h} k\left(\frac{x_{i}-x_{0}}{h}\right)$$`
+- Yerel regresyonun amaç fonksiyonu:  
+`$$\sum_{i=1}^{n} K_{i 0}\left(y_{i}-\beta_{0}-\beta_{1}\left(x_{i}-x_{0}\right)\right)^{2}$$`
+
+---
+# Yerel Regresyon 
+![](img/nonlin12.PNG)
+
+&lt;small&gt;(Kavuniçi noktalar hedef değere yakın (yerel) gözlemlerdir. Mavi eğri gerçek fonksiyon (bu pratikte bilinmez), kavuniçi eğri ise yerel regresyondur. Kaynak: ISLR Fig. 7.9, p.281)&lt;small&gt;
+
+---
+# Yerel regresyon  
+
+- Pratikte hedef noktasının çevresinde pencere içinde kaç gözlem kullanacağımıza ya da oranına,  `\(s=k/n\)`, karar vermemiz gerekir. Buna span `\(s\)` adı verilir. 
+- Burada span aslında `\(\lambda\)` gibi bir ayarlanma parametresidir. Doğrusal olmayan modelin ne kadar esnek olacağını belirler.  
+- `\(s\)` ne kadar küçükse fonksiyon o kadar inişli-çıkışlı olur. 
+- Tersi durumda, büyük bir  `\(s\)` değeri tüm gözlemlerle bir regresyon doğrusu tahmin etmekle sonuçlanır.  
+- `\(s\)` doğrudan belirlenebilir veya çapraz geçerleme ile seçilebilir.  
+- İzleyen grafikte iki farklı span değeri, `\(s=0.2\)`  ve `\(s=0.7\)`, kullanılmıştır. 
+- Span değeri yüksek olan fonksiyon beklendiği gibi diğerine göre daha düzgündür.  
+
+---
+class: my-small-font
+
+# Lokal regresyon: örnek 
+
+![](img/nonlin13.PNG) &lt;small&gt;(Source: ISLR Fig. 7.10, p.283)&lt;small&gt;
+
+
+---
+name: gams 
+
+# Generalized Additive Models (GAMs)
+
+- Genelleştirilmiş Toplamsal Modeller (GAMs) modelin eklemeli yapısını korur ancak her bir `\(X\)` değişkeninin farklı bir doğrusal olmayan yaklaşımla modellenmesine izin verir: 
+`$$\begin{aligned}
+y_{i} &amp;=\beta_{0}+\sum_{j=1}^{p} f_{j}\left(x_{i j}\right)+\epsilon_{i} \\
+&amp;=\beta_{0}+f_{1}\left(x_{i 1}\right)+f_{2}\left(x_{i 2}\right)+\cdots+f_{p}\left(x_{i p}\right)+\epsilon_{i}
+\end{aligned}$$`
+
+Burada `\(f_{j}\left(x_{i j}\right)\)` doğrusal olmayan düzgün bir fonksiyondur.  
+- Model toplamsal bir yapıya sahiptir çünkü her bir X değişkeni için ayrı bir doğrusal olmayan fonksiyon kullanılsa da sonuçta bunlar toplanır. Örneğin, 
+`$$\text { wage }=\beta_{0}+f_{1}(\text { year })+f_{2}(\text { age })+f_{3}(\text { education })+\epsilon$$`
+
+(see the next graph)
+
+---
+# GAMs: Örnek
+
+![](img/nonlin14.PNG) &lt;small&gt;Year ve age: doğal spline (4 ve 5 serbestlik derecesi ile); education: adım fonksiyonu (Kaynak: ISLR Fig. 7.11, p.284)&lt;small&gt;
+
+---
+# GAMs: Örnek
+
+![](img/nonlin15.PNG) &lt;small&gt;Year ve age için düzleştirme spline'ları (4 ve 5 serbestlik dereceleri ile); education: adım fonksiyonu (Kaynak: ISLR Fig. 7.12, p.285)&lt;small&gt;
+
+---
+class: my-medium-font
+
+# GAMS ve Sınıflandırma problemleri
+
+- GAM çıktı değişkeninin kategorik olduğu sınıflandırma problemleri için de kullanılabilir. 
+- Logit fonksiyonu parametrelerd doğrusaldır: 
+`$$\log \left(\frac{p(X)}{1-p(X)}\right)=\beta_{0}+\beta_{1} X_{1}+\beta_{2} X_{2}+\cdots+\beta_{p} X_{p}$$`
+- GAM ile logit modeli aşağıdaki gibi yazılabilir 
+`$$\log \left(\frac{p(X)}{1-p(X)}\right)=\beta_{0}+f_{1}\left(X_{1}\right)+f_{2}\left(X_{2}\right)+\cdots+f_{p}\left(X_{p}\right)$$`
+- Örneğin
+`$$\log \left(\frac{p(X)}{1-p(X)}\right)=\beta_{0}+\beta_{1} \times \text { year }+f_{2}(\text { age })+f_{3}(\text { education })$$`
+ `\(p(X)=\operatorname{Pr}(\text { wage }&gt;250 \mid \text { year, age }, \text { education })\)`
+
+
+---
+# GAM ve sınıflandırma: Örnek I(wage&gt;250)
+
+![](img/nonlin16.PNG) &lt;small&gt; `\(f_1\)`: doğrusal, `\(f_2\)`: smoothing spline (df=5), `\(f_3\)`: adım fonksiyonu. (Kaynak: ISLR Fig. 7.13, p.287)&lt;small&gt;
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
