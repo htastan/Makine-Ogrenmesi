@@ -55,30 +55,37 @@
 
 Bu dersin amacı iktisatta ve genel olarak sosyal bilimlerde kullanım potansiyeli olan bazı temel makine öğrenmesi yöntemlerinin öğretilmesidir. Bu derste ekonometri ile makine öğrenmesi yaklaşımları arasındaki benzerlik ve farklar vurgulanarak hem teorik hem de uygulamaya yönelik bilgi ve becerilerin edinilmesi amaçlanmaktadır.
 
-## Ders Kitabı 
+## Kitaplar
+
+Takip edilecek ders kitabı: 
 
 James, Gareth, D. Witten, T. Hastie, R. Tibshirani (2017), An Introduction to Statistical Learning with Applications in R, Springer. 
 
 Kitabın elektronik versiyonuna aşağıdaki linklerden ulaşabilirsiniz: 
-(http://faculty.marshall.usc.edu/gareth-james/ISL/)
-(http://faculty.marshall.usc.edu/gareth-james/ISL/ISLR%20Seventh%20Printing.pdf) 
+(https://www.statlearning.com/)
+(https://www.statlearning.com/s/ISLRSeventhPrinting.pdf) 
+
+Diğer kaynaklar: 
 
 Alpaydın, Ethem (2018), Yapay Öğrenme, 4. Baskı (Ethem Alpaydın, Introduction to Machine Learning, 2. baskıdan çeviri), Boğaziçi Üniversitesi Yayınevi, İstanbul
+
+Hastie, T., R. Tibshirani, J. Friedman (2017), Elements of Statistical Learning, 2nd ed. Springer 
+(https://web.stanford.edu/~hastie/ElemStatLearn/)
 
 ## Makaleler
 
 Athey, S. (2018), ''The Impact of Machine Learning on Economics'', Stanford University, unpublished paper. [https://projects.iq.harvard.edu/files/pegroup/files/athey2018.pdf](https://projects.iq.harvard.edu/files/pegroup/files/athey2018.pdf), 
 basılmış versiyon: (https://www.nber.org/chapters/c14009). 
 
-Athey, S. ve Imbens, G.W. (2019), ''Machine Learning Methods That Economists Should Know About'', *Annual Review of Economics*, 11: 685-725. 
+Athey, S. ve Imbens, G.W. (2019), ''Machine Learning Methods That Economists Should Know About'', *Annual Review of Economics*, 11: 685-725. (https://www.annualreviews.org/doi/abs/10.1146/annurev-economics-080217-053433) 
 
 Kleinberg, J., Ludwig, J., Mullainathan, J., ve Obermeyer, Z. (2015), "Prediction Policy Problems", *American Economic Review, Papers and Proceedings*, 105(5): 491-495. [http://dx.doi.org/10.1257/aer.p20151023](http://dx.doi.org/10.1257/aer.p20151023)
 
-Mullainathan, S. ve Spiess, J. (2017) ''Machine Learning: An Applied Econometric Approach'', *Journal of Economic Perspectives*, 31(2), 87-106.
+Mullainathan, S. ve Spiess, J. (2017) ''Machine Learning: An Applied Econometric Approach'', *Journal of Economic Perspectives*, 31(2), 87-106. (https://pubs.aeaweb.org/doi/pdf/10.1257/jep.31.2.87)
 
-Samuel,  A. L. (1959), ''Some studies in machine learning using the game of checkers'', *IBM Journal*, 3: 210–229. 
+Samuel,  A. L. (1959), ''Some studies in machine learning using the game of checkers'', *IBM Journal*, 3: 210–229. (http://www2.stat.duke.edu/~sayan/R_stuff/Datamatters.key/Data/samuel_1959_B-95.pdf)
 
-Varian, H.R. (2014), ''Big Data: New Tricks for Econometrics'', *Journal of Economic Perspectives*, 28 (2): 3–28.
+Varian, H.R. (2014), ''Big Data: New Tricks for Econometrics'', *Journal of Economic Perspectives*, 28 (2): 3–28. (https://pubs.aeaweb.org/doi/pdf/10.1257/jep.28.2.3)
 
 
 ## Videolar 
