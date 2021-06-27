@@ -22,7 +22,7 @@ class: center, middle, inverse, title-slide
 
 &lt;style type="text/css"&gt;
 .remark-slide-content {
-    font-size: 28px;
+    font-size: 25px;
     padding: 1em 4em 1em 4em;
 }
 .my-large-font {
@@ -49,6 +49,7 @@ class: center, middle, inverse, title-slide
 - [Düzleştirme Spline'ları](#smoothing)
 - [Lokal regresyon](#local) 
 - [Genelleştirilmiş Toplamsal Modeller (GAMs)](#gams)
+- [Yapay Sinir Ağları](#ysa)
 
 ---
 class: my-medium-font
@@ -464,6 +465,123 @@ class: my-medium-font
 ![](img/nonlin16.PNG) &lt;small&gt; `\(f_1\)`: doğrusal, `\(f_2\)`: smoothing spline (df=5), `\(f_3\)`: adım fonksiyonu. (Kaynak: ISLR Fig. 7.13, p.287)&lt;small&gt;
 
 
+---
+name: ysa 
+
+# Yapay Sinir Ağları (YSA) 
+
+![:scale 200%](img/ann1.PNG)  
+ 
+
+- Yapay sinir ağları beyindeki sinir hücrelerinin (nöronların) çalışma prensiplerinden hareketle oluşturulan doğrusal olmayan ve oldukça esnek modellerdir. 
+- Biyolojik sinir ağları elektrik sinyallerini kullanarak bilgiyi iletebilen ve çıktı üreten nöronlardan oluşur.   
+- Benzer şekilde, bir YSA modeli, çok sayıda girdiyi bilinmeyen bir parametre vektörü ile ağırlıklandırarak çıktıya dönüştürür. 
+- Çıktı değişkeni birden fazla olabilir. Hem regresyon hem de sınıflandırma problemlerine uygulanabilir. 
+ 
+---
+# Yapay Sinir Ağları
+
+.pull-left[
+![](img/ann2.PNG) 
+- Yapay sinir ağlarının yapısı bir şebeke grafiği ile stilize bir şekilde gösterilebilir.
+- Tipik bir YSA üç ana katmandan oluşur: girdi katmanı (input), gizli katmanlar (hidden layers), ve
+çıktı katmanı (output)
+
+]
+--
+.pull-right[
+- YSA çok katmanlı (multilayer) ya da tek katmanlı (single layer) olabilir.  
+- Bir YSA'nın bileşenleri şunlardır: 
+  - Girdiler: `\(x_1, x_2,\ldots,x_p\)` 
+  - Ağırlıklar (bilinmeyen parametreler): `\(w_1,w_2,\ldots,w_p\)`, ve `\(w_0\)` (sabit) 
+  - Toplama fonksiyonu: `\(\sum_{j=1}^{d} w_{j} x_{j}+w_{0}\)` 
+  - Aktivasyon fonksiyonu: `\(h(\cdot)\)` 
+- Tek çıktılı basit bir YSA (perceptron - algılayıcı) aşağıdaki gibi yazılabilir: 
+`$$y=h\left( \sum_{j=1}^{d} w_{j} x_{j}+w_{0} \right)$$`
+]
+
+---
+# Aktivasyon Fonksiyonları
+
+![](img/activation.PNG) 
+- Aktivasyon fonksiyonları 
+([Kaynak](https://en.wikipedia.org/wiki/Activation_function))
+
+
+---
+# Sigmoid Aktivasyon fonksiyonu
+
+.pull-left[ 
+![](img/sigmoid.PNG) 
+- Sigmoid aktivasyon fonksiyonu (kırmızı): 
+`$$\sigma(v) = \frac{1}{1+e^{-v}}$$`
+
+]
+--
+.pull-right[
+- Grafikte ayrıca `\(\sigma(sv)\)` iki değer için gösterilmiştir: `\(s=0.5\)` (mavi), 
+`\(s=10\)` (mor) (Kaynak: Elements of Statistical Learning, p.394)
+- Aktivasyon fonksiyonu `\(\sigma=1\)` olduğunda (identity function) model girdilere göre 
+doğrusal olur. 
+- Bir YSA aslında doğrusal sınıflandırma ya da regresyon problemlerinin 
+doğrusal olmayan genelleştirmesi olarak düşünülebilir.  
+]
+
+
+---
+# Örnek: Basit bir ileri beslemeli YSA  
+
+`$$\hat{y} = -3,01408(-2.46247 - 0.76578x_1+1.49965x_2-1.29388x_3) + 2.17061$$`
+`$$\hat{y}\approx 9.593+2.308x_1-4.52x_2+3.90x_3$$`
+.pull-left[ 
+![](img/nnet0.PNG) 
+]
+--
+.pull-right[ 
+- 3 girdi, tek katman, aktivasyon fonksiyonu: `\(h(z)=z\)` (identity)
+- Aslında bu OLS regresyonu ile aynıdır: 
+![](img/nnet0reg.PNG) 
+- Bir yapay sinir ağacı `\(x\)` değişkenleri arasındaki etkileşimi açık olarak belirtmeden 
+yakalayabilir. 
+]
+
+
+---
+# Örnek
+ 
+.pull-left[ 
+![](img/nnet1.PNG) 
+]
+--
+.pull-right[ 
+- Tek gizli katmanlı, üç hücreli bir ileri beslemeli yapay sinir ağı (mavi renkte
+gösterilenler sabitlerdir; YSA jargonunda "bias")
+- Bu model değişken etkileşimlerine izin verir. 
+]
+
+
+---
+# Yapay Sinir Ağlarının Eğitilmesi
+
+.pull-left[
+- YSA modellerinde amaç fonksiyonu regresyon problemleri için kalıntı kareleri toplamı: 
+
+`$$R(\theta)=\sum_{k=1}^{K} \sum_{i=1}^{N}\left(y_{i k}-f_{k}\left(x_{i}\right)\right)^{2}$$`
+
+- Sınıflandırma problemleri için ise hata karesi ya da çapraz-entropi (deviance): 
+`$$R(\theta)=-\sum_{i=1}^{N} \sum_{k=1}^{K} y_{i k} \log f_{k}\left(x_{i}\right)$$`
+
+`\(\theta\)`: bilinmeyen ağırlık vektörü, `\(y_{i k}\)`: gözlem değerleri, `\(f_{k}\)`: `\(k\)` çıktısı için tahmin değeri, `\(K\)` çıktı sayısını, `\(N\)` gözlem sayısı 
+] 
+
+--
+
+.pull-right[
+- Minimum `\(R(\theta)\)` değerini veren ağırlıklar gradyan iniş algoritması ile bulunabilir (gradient descent). Bu algoritma geri-yayılım algoritması olarak da bilinir (back-propagation algorithm). 
+- Gradyan (birinci türev vektörü)  zincir kuralı ile kolayca hesaplanabilir. 
+- Fazla uyumdan kaçınmak için genellikle gradyan vektörü küçük pozitif bir parametre ile çarpılır. Böylece öğrenme hızı kontrol edilebilir. 
+- Algoritmanın detayları için bkz. ss. 395-397, Hastie, Tibshirani, Friedman (2017), Elements of Statistical Learning, 2nd ed. Springer 
+]
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

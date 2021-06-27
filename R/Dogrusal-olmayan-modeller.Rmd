@@ -1,20 +1,22 @@
 ---
-title: "Doğrusal Olmayan Modeller" 
-subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
-author: 
-  name: "Prof. Dr. Hüseyin Taştan"
-  affiliation: "Yıldız Teknik Üniversitesi"
+title: "Doğrusal Olmayan Modeller"
+author:
+  name: Prof. Dr. Hüseyin Taştan
+  affiliation: Yıldız Teknik Üniversitesi
 date: "Haziran 2021"
 output:
-  html_document: 
-    number_sections: true
+  html_document:
+    number_sections: yes
     theme: lumen
-    highlight: haddock 
-    # code_folding: show
+    highlight: haddock
     toc: yes
     toc_depth: 3
     toc_float: yes
-    keep_md: false
+    keep_md: no
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+subtitle: (İktisatçılar İçin) Makine Öğrenmesi (TEK-ES-2021)
 ---
 <style type="text/css"> 
 body{
@@ -562,6 +564,252 @@ gam.lr.s <- gam(I(wage > 250) ~ year + s(age, df = 5) + education,
                 subset = (education != "1. < HS Grad"))
 plot(gam.lr.s, se = T, col = "green")
 ```
+
+
+# Yapay Sinir Ağları 
+
+Yapay sinir ağları için çeşitli R kütüphaneler bulunmaktadır. Bunlardan biri `{neuralnet}` paketidir (bkz. [neuralnet CRAN page](https://cran.r-project.org/web/packages/neuralnet/index.html)). 
+
+```{r}
+library(tidyverse)
+library(neuralnet)
+```
+
+## Simülasyon verileri
+
+```{r}
+# simulate data 
+set.seed(1)
+x1=rnorm(1000)
+x2=rnorm(1000)
+x3=rnorm(1000)
+
+y=10 + 2*x1 -5*x2 +4*x3 + 3*x1*x2 - 8*x1*x3 + 2*x2*x3 + 5*x1*x2*x3 + rnorm(1000)
+df <- tibble(y,x1,x2,x3)
+```
+
+```{r}
+# YSA tek katman, aktivasyon=identity
+set.seed(12345)
+nnet0 <- neuralnet(y ~ x1 + x2 + x3, data=df, act.fct = identity)
+summary(nnet0)
+nnet0$result.matrix
+```
+
+
+```{r}
+plot(nnet0)
+```
+
+Lineer regresyon OLS tahmini: 
+```{r}
+regfit0 <- lm(y ~ x1 + x2 + x3, data=df)
+summary(regfit0)
+```
+
+Şimdi simülasyon ile oluşturduğumuz veri setinden hareketle train-test ayırımı yapalım. Bundan önce, değişkenleri 0-1 aralığına olacak şekilde standardize edelim: 
+```{r}
+scale1 <- function(x){
+  (x - min(x)) / (max(x) - min(x))
+}
+dfs <- df %>% mutate_all(scale1)
+```
+
+
+```{r}
+# %75 train %25 test
+set.seed(555)
+train_id <- sample(1000, 750)
+dfs_train <- dfs[train_id, ]
+dfs_test <- dfs[-train_id, ]
+```
+
+
+```{r}
+# 1 hücreli tek katman, default act.fct = "logistic" (i.e., sigmoid)
+nnet1 <- neuralnet(y ~ x1 + x2 + x3, data=dfs_train)
+plot(nnet1, rep = "best")
+```
+
+
+```{r}
+# 2 hücreli tek katman
+nnet2 <- neuralnet(y ~ x1 + x2 + x3, data=dfs_train, hidden=2)
+plot(nnet2, rep = "best")
+```
+
+```{r}
+# 3 hücreli tek katman
+nnet3 <- neuralnet(y ~ x1 + x2 + x3, data=dfs_train, hidden=3)
+plot(nnet3, rep = "best")
+```
+```{r}
+# 3 hücreli 2 katman
+# relu <- function(x) {max(0,x)}
+nnet4 <- neuralnet(y ~ x1 + x2 + x3, data=dfs_train, hidden=c(3,3))
+plot(nnet4, rep = "best")
+```
+
+Test veri setinde kestirim hatası: 
+```{r}
+pred_nnet4 <- predict(nnet4, newdata = dfs_test)
+mse_nnet4 <- mean((dfs_test$y - pred_nnet4)^2)
+mse_nnet4
+```
+
+Bunu lineer regresyon ile karşılaştıralım: 
+```{r}
+linreg <- lm(y ~ x1 + x2 + x3, data = dfs_train)
+pred_linreg <- predict(linreg, newdata = dfs_test)
+mse_linreg <- mean((dfs_test$y - pred_linreg)^2)
+mse_linreg
+```
+
+Bu YSA modeline göre daha büyüktür. Lineer modele etkileşim terimleri ekleyelim: 
+```{r}
+linreg2 <- lm(y ~ x1*x2*x3, data = dfs_train)
+summary(linreg2)
+```
+
+
+```{r}
+options(scipen = 999) # bilimsel notasyonu kapat
+pred_linreg2 <- predict(linreg2, newdata = dfs_test)
+mse_linreg2 <- mean((dfs_test$y - pred_linreg2)^2)
+mse_linreg2 
+```
+
+Bu çok daha başarılı bir kestirim performansına sahiptir. Ancak burada doğru modeli bildiğimiz için doğrudan tahmin ettik. Çok sayıda kestirim değişkenlerinin olduğu durumda hangi etkileşimleri ekleyeceğimizi genellikle bilemeyiz.
+
+Kestirimleri görselleştirebiliriz: 
+```{r}
+data_pred <- tibble(pred_nnet4, pred_linreg, pred_linreg2, truth = dfs_test$y)
+p1 <- ggplot(data_pred, aes(truth, pred_nnet4)) + 
+  geom_point() + 
+  geom_smooth() +
+  ggtitle("NNET4")
+p2 <- ggplot(data_pred, aes(truth, pred_linreg)) + 
+  geom_point() + 
+  geom_smooth() +
+  ggtitle("Lineer Regresyon")
+p3 <- ggplot(data_pred, aes(truth, pred_linreg2)) + 
+  geom_point() + 
+  geom_smooth() +
+  ggtitle("Etkileşimli lineer reg")
+# plot 
+library(patchwork)
+p1 | p2 | p3
+```
+
+
+
+
+## Örnek: Boston housing data 
+
+```{r}
+library(MASS)
+library(neuralnet)
+data("Boston")
+```
+
+```{r}
+# scale variables, except chas and medv
+# boston <- as_tibble(Boston) %>% 
+#  mutate(across(.cols=-c("chas","medv"), scale1))
+boston <- as_tibble(Boston) %>% 
+  mutate(across(.cols=-c("chas"), scale1))
+# scale1 fonksiyonu yukarıda tanımlanmıştı
+```
+
+
+```{r}
+# train-test split
+library(rsample) 
+set.seed(10) # for replication
+boston_split <- initial_split(boston, 
+                           prop = 0.75, 
+                           strata = medv)
+```
+
+```{r}
+# train-test verileri
+boston_train <- boston_split %>% training()
+boston_test <- boston_split %>% testing()
+```
+
+```{r}
+# iki saklı katman, herbirinde 5 nöron
+set.seed(1010)
+nn1 <- neuralnet(medv ~ crim + zn + indus + chas + nox + rm + age + dis + rad + tax + 
+                   ptratio + black + lstat,
+                 data = boston_train,
+                 hidden = c(5,5))
+```
+
+
+```{r}
+# YSA'nın yapısı 
+plot(nn1, col.hidden = 'darkgreen',     
+     col.hidden.synapse = 'darkgreen',
+     show.weights = F,
+     information = F,
+     fill = 'lightblue', 
+     rep = "best"   # to render graph in html output
+     )
+```
+
+```{r}
+# kestirimler
+pred_nn1 <- predict(nn1, newdata = boston_test)
+
+# scale1'i tersine çevir
+pred_nn1_converted <- (max(pred_nn1)-min(pred_nn1))*pred_nn1 + min(pred_nn1)
+test_medv <- (max(boston_test$medv)-min(boston_test$medv))*boston_test$medv + min(boston_test$medv)
+# tibble oluştur
+result_data <- tibble(test_medv, pred_nn1_converted)
+head(result_data)
+```
+
+
+```{r}
+# MSE hesapla
+mse_boston_nn1 <- mean((pred_nn1_converted - test_medv)^2)
+mse_boston_nn1
+```
+
+```{r}
+# tüm değişkenlerle lineer regresyon 
+reg1 <- lm(medv ~ crim + zn + indus + chas + nox + rm + age + dis + rad + tax + 
+                   ptratio + black + lstat, data = boston_train)
+pred_reg1 <- predict(reg1, newdata = boston_test)
+pred_reg1_converted <- (max(pred_reg1)-min(pred_reg1))*pred_reg1 + min(pred_reg1)
+result_data$pred_reg1_converted <- pred_reg1_converted
+head(result_data)
+```
+
+
+```{r}
+# lineer regresyon MSE değeri 
+mse_boston_reg1 <- mean((pred_reg1_converted - test_medv)^2)
+mse_boston_reg1
+```
+
+
+```{r}
+# Kestirim karşılaştırması 
+p1 <- ggplot(result_data, aes(test_medv, pred_nn1_converted)) + 
+  geom_point() + 
+  geom_smooth() +
+  ggtitle("YSA(5,5)")
+p2 <- ggplot(result_data, aes(test_medv, pred_reg1_converted)) + 
+  geom_point() + 
+  geom_smooth() +
+  ggtitle("Lineer Regresyon") 
+# plot 
+library(patchwork)
+p1 | p2  
+```
+
 
 
 

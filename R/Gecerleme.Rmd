@@ -293,6 +293,267 @@ summary(lm(mpg~horsepower+I(horsepower^2),data=Auto))$coef
 ```
 
 
+# Tidymodels Kütüphaneleri
+
+
+[Tidymodels](https://www.tidymodels.org/) makine öğrenmesi modellerinin kolayca eğitilmesi ve değerlendirilmesi için oluşturulmuş paketler topluluğudur. Tidyverse yaklaşımını takip eden bu paketler şunlardır:  
+
+- `{rsample}`: yeniden örnekleme
+
+- `{recipes}`: kestirim değişkenlerinin belirlenmesi
+
+- `{parsnip}`: modelin eğitilmesi
+
+- `{tune}`, `{dials}`: modelin hiperparametrelerinin belirlenmesi 
+
+- `{yardstick}`: modelin performansının değerlendirilmesi 
+
+![](img/tidymodels1.PNG) 
+
+Giriş için bkz. [https://www.tidymodels.org/start/](https://www.tidymodels.org/start/)
+
+
+```{r}
+# first install tidymodels 
+# needs to be done once
+# install.packages("tidymodels")
+```
+
+Örnek olarak `Auto` veri setini kullanarak bir regresyon modeli tahmin edelim. 
+
+Önce verileri eğitim ve test olmak üzere iki kısma ayıralım. Bunun için `{rsample}` paketindeki `initial_split()` fonksiyonunu kullanabiliriz. 
+
+Çıktı değişkenimiz `mpg` kestirim değişkenimiz ise `horsepower`. 
+Verilerin rassal seçilmiş yüzde 75'ini eğitim, %25'ini de test verisi olarak kullanacağız.  
+```{r}
+library(tidymodels)
+library(ISLR)
+set.seed(1)
+auto_split <- initial_split(Auto, 
+                           prop = 0.75, 
+                           strata = mpg)
+```
+
+Yukarıda `strata` opsiyonu ile bağımlı değişkenin hem eğitim hem de test verilerinde aşağı yukarı benzer bir dağılıma sahip olması sağlanabilir.   
+
+Eğitim verileri: 
+```{r}
+auto_train <- auto_split %>% training()
+head(auto_train)
+```
+
+Test verileri
+```{r}
+auto_test <- auto_split %>% testing()
+head(auto_test)
+```
+`auto_test` verileri en sonda sadece model değerlendirmesinde kullanılacak.  
+
+`mpg`'nin `horsepower` üzerine regresyonunda `{parsnip}` paketi kullanılabilir. Adımlar: 
+
+1. Model türünü belirle:  `parsnip::linear_reg()`. 
+
+2. Model tahmininde kullanılacak fonksiyonu belirle (engine,  `lm()` fonksiyonu): `parsnip::set_engine('lm')`. 
+
+3. Gözetimli öğrenme türünü belirle (sınıflandırma ya da regresyon) `parsnip::set_mode('regression')`. 
+
+Tahmin nesnesini oluştur: `lm_model`
+```{r}
+lm_model <- linear_reg() %>%
+  set_engine('lm') %>%
+  set_mode('regression')
+```
+
+```{r}
+lm_model
+```
+
+`parsnip::fit()` fonksiyonu ile modeli eğit: 
+```{r}
+auto_fit <- lm_model %>%
+  fit(mpg ~ horsepower, data = auto_train)
+```
+
+
+Tablo haline getir:  
+```{r}
+tidy(auto_fit)
+```
+
+
+Test verilerini kullanarak kestirim değerlerini oluştur: 
+```{r}
+auto_preds <- auto_fit %>%
+  predict(new_data = auto_test)
+```
+
+`auto_preds` nesnesinin elemanları: 
+```{r}
+head(auto_preds)
+```
+
+`.pred` sütünunda yer alan değerler test verileriyle oluşturulmuştur.  
+
+
+Test setinde yer alan `mpg` ve `horsepower` verileriyle birleştir: 
+```{r}
+auto_test_results <- auto_test %>%
+  select(mpg, horsepower) %>%
+  bind_cols(auto_preds)
+```
+
+Veri setine göz at:  
+```{r}
+head(auto_test_results)
+```
+
+`{yardstick}` ile değerlendirme metriklerini hesapla. Burada `rmse()` ölçütünü kullanacağız: 
+```{r}
+auto_test_results %>% 
+  rmse(truth = mpg, estimate = .pred)
+```
+
+Bunu hesaplamak için gerçek değerlere ve kestirim değerlerine ihtiyaç duyuyoruz. 
+
+Gerçek ile kestirim arasındaki R-squared de ölçüt olabilir:  
+```{r}
+auto_test_results %>%
+  rsq(truth = mpg, estimate = .pred)  
+```
+
+Görselleştirelim:  
+```{r}
+ggplot(auto_test_results, aes(x = mpg, y = .pred)) +
+  geom_point() +
+  geom_abline(color = 'blue', linetype = 2) +
+  coord_obs_pred() +
+  labs(title = 'R-Squared Plot',
+       y = 'Predicted MPG',
+       x = 'Actual MPG')
+```
+
+Başarılı bir kestirim modeli için noktaların 45 derece doğrusu üzerinde dizilmesini bekleriz. Bu örnekte böyle olmadığını görüyoruz. 
+
+Modele karesel terimler ekleyelim: 
+```{r}
+auto_fit2 <- lm_model %>%
+  fit(mpg ~ horsepower + I(horsepower^2), data = auto_train)
+```
+
+
+```{r}
+tidy(auto_fit2)
+```
+
+
+Test verisiyle kestirimler:  
+```{r}
+auto_preds2 <- auto_fit2 %>%
+  predict(new_data = auto_test)
+```
+
+```{r}
+auto_preds2
+```
+
+```{r}
+auto_test_results2 <- auto_test %>%
+  select(mpg, horsepower) %>%
+  bind_cols(auto_preds2)
+```
+
+```{r}
+head(auto_test_results2)
+```
+
+`{yardstick}` paketiyle metrikleri hesapla:  
+```{r}
+auto_test_results2 %>% 
+  rmse(truth = mpg, estimate = .pred)
+```
+
+Bu model birinci modele göre daha başarılıdır.  
+
+```{r}
+auto_test_results2 %>%
+  rsq(truth = mpg, estimate = .pred)  
+```
+ 
+```{r}
+ggplot(auto_test_results2, aes(x = mpg, y = .pred)) +
+  geom_point() +
+  geom_abline(color = 'blue', linetype = 2) +
+  coord_obs_pred() +
+  labs(title = 'R-Squared Plot',
+       y = 'Predicted MPG',
+       x = 'Actual MPG')
+```
+
+R-kare daha yüksek çıktı. 
+
+Model seçimi tamamlandıktan sonra `{tune}` paketindeki `last_fit()`  fonksiyonu ile  
+
+1. eğitim-test ayrımını yapabilir
+
+2. eğitim verisiyle modeli tahmin edebilir
+
+3. kestirimleri oluşturup değerlendirme ölçütlerini hesaplayabilir
+
+4. ve bunları bir nesne içinde saklayabiliriz. 
+
+```{r}
+lm_last_fit <- lm_model %>%
+  last_fit(mpg ~ horsepower + I(horsepower^2), 
+           split = auto_split)
+```
+
+`tune::collect_metrics()` fonksiyonu model değerlendirme ölçütlerini hesaplar: 
+```{r}
+lm_last_fit %>% 
+  collect_metrics()
+```
+
+`tune::collect_predictions()` gerçek ve kestirim değerlerini içeren bir tibble oluşturur: 
+```{r}
+lm_last_fit %>% 
+  collect_predictions()
+```
+
+
+Tidymodels ile k-katlı çapraz geçerleme yapılabilir. 
+
+![](img/cv0-1.png) 
+
+![](img/cv1-1.png)
+
+
+
+k=5 için CV katlarının oluşturulması: 
+```{r}
+set.seed(12)
+folds <- vfold_cv(auto_train, v = 5)
+folds
+```
+
+Bir akış (workflow) oluşturup tüm katlar için tahminleri yapabiliriz: 
+```{r}
+auto_wf <- workflow() %>% 
+  add_model(lm_model) %>% 
+  add_formula(mpg ~ horsepower + I(horsepower^2))
+auto_wf
+```
+
+```{r}
+auto_fit_rs <- auto_wf %>% 
+  fit_resamples(folds)
+auto_fit_rs
+```
+
+```{r}
+collect_metrics(auto_fit_rs)
+```
+Yukarıdaki tabloda yer alan metrikler 5 kat için ortalamalardır. 
+
 
 
 <br>

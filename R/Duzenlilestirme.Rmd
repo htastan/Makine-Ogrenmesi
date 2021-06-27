@@ -372,6 +372,128 @@ lasso.coef
 lasso.coef[abs(lasso.coef)>0.0001]
 ```
 
+## Elastic Net 
+
+$\alpha=0.5$ olarak belirleyip `glmnet()` fonksiyonunu çalıştıralım:  
+```{r}
+set.seed(1)
+cv.out <- cv.glmnet(x[train,], y[train], alpha=0.5)
+plot(cv.out)
+bestlam <- cv.out$lambda.min
+bestlam
+elnet.mod <- glmnet(x[train,], y[train], alpha=0.5)
+plot(elnet.mod)
+```
+
+
+```{r}
+elnet.pred <- predict(lasso.mod, s=bestlam, newx=x[test,])
+mean((elnet.pred - y.test)^2) 
+```
+
+Hangi katsayılar tam olarak sıfırdır?
+```{r}
+out <- glmnet(x, y, alpha=1)
+lasso.coef <- predict(out, type="coefficients", s=bestlam)[1:11,]
+lasso.coef 
+```
+
+```{r}
+MSE <- numeric(11)
+lambda <- rep(NA, 11)
+alpha <-  (0:10)/10
+set.seed(1)
+for (i in 1:11) {
+  fit <- cv.glmnet(x[train,], y[train], type.measure="mse", 
+                                              alpha=alpha[i], family="gaussian")
+  yhat <- predict(fit, s=fit$lambda.1se, newx=x[test,])
+  lambda[i] <- fit$lambda.1se
+  MSE[i] <- mean((y[test] - yhat)^2) 
+}
+```
+
+Yukarıdaki döngüde her bir $\alpha$ değeri için CV ile $\lambda$ değeri belirlendi. Sonuçlar: 
+```{r}
+cbind(alpha, lambda, MSE)
+```
+
+En küçük  MSE değeri alpha=1 olduğunda (yani LASSO ile) sağlanıyor. 
+
+
+# Uygulama: Ekonomik büyümenin belirleyicileri
+
+Bu örnekte Barro-Lee (1994) büyüme verilerini kullanacağız. Bu veriler  `hdm` paketinin bir parçasıdır, bkz. [Belloni et al., hdm: High-Dimensional Metrics](https://journal.r-project.org/archive/2016/RJ-2016-040/RJ-2016-040.pdf)
+
+```{r}
+# install.packages("hdm")
+library(hdm)
+```
+
+Veri seti: 
+```{r}
+data("GrowthData")
+```
+
+Veri setinde $n=90$ ülke ve $p=60$ makroekonomik gösterge ve diğer ülke özellikleri yer almaktadır.  
+
+Standart ekonomik yakınsama modeli aşağıdaki gibi yazılabilir: 
+$$Y_{i,T}=\beta_{0}+\beta_{1} Y_{i,0}+\sum_{j=2}^{p} \beta_{j} X_{i j}+\varepsilon_{i},\quad i=1,\dots,n,$$
+Burada $Y_{i,T}$ kişi başına GDP'nin büyüme oranı (1965-1975 ve 1975-1985 dönemleri için), $Y_{i,0}$ $i$ ülkesi için başlangıç gelir düzeyi,  $X_{i j}$ ise ülkelerin büyüme performansını etkileyebilecek değişkenlerden oluşmaktadır. Yakınsama hipotezi:  $\beta_1<0$. 
+
+İktisat teorisi modelde yer alması gereken değişkenlerin hangileri olması gerektiği konusunda çok açık değildir. Acaba LASSO benzeri düzenlileştirme yaklaşımlarını kullanabilir miyiz? 
+```{r}
+# standard lasso using glmnet
+y <- GrowthData$Outcome
+x <- model.matrix(Outcome ~ . -intercept, data=GrowthData)[,-1]
+library(glmnet)
+lasso_fit1 <- glmnet(x, y, alpha=1)
+plot(lasso_fit1)
+cv.out <- cv.glmnet(x, y, alpha=1)
+plot(cv.out)
+bestlam <- cv.out$lambda.min
+bestlam
+out <- glmnet(x, y, alpha=1, lambda=bestlam)
+coefficients(out)
+```
+
+LASSO çıktısına göre başlangıç geliri modelden dışlandı (katsayısı sıfır olarak belirlendi). Bu değişkeni modelde tutmak ve değişken seçimi yapmak istiyoruz.   
+
+Bu amaçla   Belloni, Chernozhukov, ve Hansen tarafından geliştirilen **Post-Double Selection LASSO** yaklaşımını kullanabiliriz. Bu algoritma aşağıdaki adımlardan oluşur: 
+
+Step 1: Use LASSO (or other shrinkage methods) to select $x_j$ for predicting $y_T$. 
+
+Step 2: Use LASSO (or other shrinkage methods) to select $x_j$ for predicting $y_0$. 
+
+Step 3: Refit the model by OLS after selection (use either $x_j$ selected in both steps)
+
+Daha fazla detay için bkz. [How to do model selection with inference in mind](https://stuff.mit.edu/~vchern/papers/Chernozhukov-Saloniki.pdf). 
+
+
+```{r}
+# prepare data
+library(hdm)
+yT <- GrowthData$Outcome
+y0 <- GrowthData$gdpsh465
+x <- model.matrix(Outcome ~ . -intercept -gdpsh465 , data=GrowthData)[,-1]
+```
+
+```{r}
+double_lasso_fit <- rlassoEffect(x = x, y = yT, d = y0,
+                      method = "double selection")
+summary(double_lasso_fit)
+```
+
+```{r}
+# Selected coefficients
+ double_lasso_fit$coefficients.reg
+```
+
+Başlangıç gelir düzeyi $Y_0$'ın katsayısı $\hat{\beta}_1=-0.05$ ve değişen-varyans dirençli standart hatası 0.016 olarak tahmin edilmiştir. Bu sonuç neoklasik yakınsama hipotezini desteklemektedir.  
+
+
+**Kaynaklar**
+
+[A. Belloni, V. Chernozhukov, C. Hansen (2014). Inference on treatment effects after selection among high-dimensional controls. The Review of Economic Studies 81(2), 608-650. ](https://www.jstor.org/stable/pdf/43551575.pdf?refreqid=excelsior%3A2d94601a4e1a0bc9e93644a411795bb8)
 
 
 <br>
