@@ -4,7 +4,6 @@
     <title>Regresyon Analizi</title>
     <meta charset="utf-8" />
     <meta name="author" content="Hüseyin Taştan" />
-    <script src="libs/header-attrs-2.8/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
   </head>
@@ -132,7 +131,7 @@ PRF: `\(Y= 2 + 3X + \epsilon\)` (simülasyonla elde edildiği için biliniyor)
 
 .center[![:scale 77%](img/reg3.PNG)]
 
-Kırmızı: gerçek ilişki (PRF), siyah: tahmin, sağda: çok sayıda tekrarlı verilerdle tahmin edilen OLS örneklem fonksiyonları. (ISLR, Fig.3.2, s.64)
+Kırmızı: gerçek ilişki (PRF), siyah: tahmin, sağda: çok sayıda tekrarlı verilerde tahmin edilen OLS örneklem fonksiyonları. (ISLR, Fig.3.2, s.64)
 
 ---
 # OLS Tahmincilerinin Cebirsel Özellikleri 
@@ -174,7 +173,7 @@ Kırmızı: gerçek ilişki (PRF), siyah: tahmin, sağda: çok sayıda tekrarlı
 * Belirlilik katsayısı, `\(0\leq R^2\leq 1\)`: 
 `$$R^2 = \frac{SSE}{SST} = 1 - \frac{SSR}{SST}$$`
 
-* Yorum: `\(y\)`'deki değişkenliğin yaklaşık %$100\times R^2$ kadarı `\(x\)` tarafından açıklanabilmektedir.
+* Yorum: `\(y\)`'deki değişkenliğin yaklaşık % `\(100\times R^2\)` kadarı `\(x\)` tarafından açıklanabilmektedir.
 
 * Zayıf nokta: Modele yeni değişkenler eklendikçe `\(R^2\)` her zaman artar ya da aynı kalır, hiç bir zaman azalmaz. Model seçiminde kullanılamaz. 
 
@@ -261,7 +260,7 @@ SE = standart hata (standard error)
 ]
 
 .pull-right[
-* İki kestirim değişkeninin `\(X_1,X2\)` olduğu durumda OLS tahmin doğrusu bir yüzeye dönüşür. 
+* İki kestirim değişkeninin `\(X_1,X_2\)` olduğu durumda OLS tahmin doğrusu bir yüzeye dönüşür. 
 
 * kırmızı noktalar: gözlem noktaları
 
@@ -431,10 +430,7 @@ Tam çoklu doğrusallık durumunda OLS tahmincileri tanımsızdır. Ancak yükse
 
 ![:scale 70%](img/reg11.PNG)
 
-Sol: OLS amaç fonksiyonu kontür çizimi, düşük korelasyonlu `\(X\)` değişkenleri; Sağ: yüksek korelasyonlu `\(X\)` değişkenleri ile OLS. 
-
-
-
+Sol: OLS amaç fonksiyonu kontür çizimi, düşük korelasyonlu `\(X\)` değişkenleri; Sağ: yüksek korelasyonlu `\(X\)` değişkenleri ile OLS.
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
