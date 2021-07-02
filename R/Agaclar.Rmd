@@ -131,6 +131,7 @@ table(tree.pred, High.test)
 Örnek olarak `MASS` paketinde yer alan `Boston` ev fiyatları verisini kullanacağız. Bağımlı değişken medyan ev fiyatları (`medv`). Eğitim verilerinde ağaç tahmini: 
 ```{r}
 library(MASS)
+library(tree)
 set.seed(81)
 train <- sample(1:nrow(Boston), nrow(Boston)/2)
 tree.boston <- tree(medv ~ ., Boston, subset = train)
@@ -240,7 +241,11 @@ Sonuçlara göre bölgenin refah düzeyi (`lstat`) ve ev büyüklüğü (`rm`) e
 
 # Boosting 
 
-Boosting (takviye) yöntemi için `gbm` paketindeki `gbm()` fonksiyonu kullanılabilir. Örnek olarak `Boston` veri seti için bir takviyeli ağaç tahmin edelim. Bunun için  `gbm()` fonksiyonunu `distribution="gaussian"` opsiyonu ile çalıştıracağız (regresyon problemi olduğu için). İkili sınıflama problemleri için `distribution="bernoulli"` kullanılabilir. `n.trees=5000` opsiyonu 5000 ağaç oluşturulacağını, `interaction.depth=4` her ağacın derinliğini belirtmektedir.  
+## `{gbm}` Paketi 
+
+Boosting (takviye) yöntemi için `gbm` paketindeki `gbm()` fonksiyonu kullanılabilir (bkz. [https://www.rdocumentation.org/packages/gbm/versions/2.1.8](https://www.rdocumentation.org/packages/gbm/versions/2.1.8)). 
+
+Örnek olarak `Boston` veri seti için bir takviyeli ağaç tahmin edelim. Bunun için  `gbm()` fonksiyonunu `distribution="gaussian"` opsiyonu ile çalıştıracağız (regresyon problemi olduğu için). İkili sınıflama problemleri için `distribution="bernoulli"` kullanılabilir. `n.trees=5000` opsiyonu 5000 ağaç oluşturulacağını, `interaction.depth=4` her ağacın derinliğini belirtmektedir.  
 ```{r, warning=FALSE}
 library(gbm)
 set.seed(1)
@@ -249,6 +254,10 @@ boost.boston <- gbm(medv ~ .,
                     distribution = "gaussian",
                     n.trees = 5000, 
                     interaction.depth=4)
+```
+
+
+```{r, warning=FALSE}
 summary(boost.boston)
 ```
 
@@ -265,20 +274,280 @@ Kısmi bağımlılık grafikleri diğer değişkenlerin etkisi arındırıldıkt
 
 Şimdi takviyeli (boosted) ağaç modeline göre `medv` değişkenini test verisinde tahmin edelim
 ```{r}
-yhat.boost <- predict(boost.boston, newdata=Boston[-train,], n.trees=5000)
+yhat.boost <- predict(boost.boston, 
+                      newdata=Boston[-train,], 
+                      n.trees=5000)
+boston.test <- Boston[-train, "medv"]
 mean((yhat.boost-boston.test)^2)
 ```
 
-Yukarıda default $\lambda = 0.001$ (küçültme, shrinkage) parametresi kullanıldı. $\lambda=0.2$ için yeniden tahmin edelim: 
+Yukarıda default $\lambda = 0.001$ (küçültme, shrinkage) parametresi kullanıldı. $\lambda=0.1$ için yeniden tahmin edelim: 
 ```{r}
-boost.boston <- gbm(medv ~ ., data = Boston[train,],
-                    distribution = "gaussian", n.trees=5000,
-                    interaction.depth = 4, shrinkage = 0.2, verbose=F)
+boost.boston <- gbm(medv ~ ., 
+                    data = Boston[train,],
+                    distribution = "gaussian", 
+                    n.trees=5000,
+                    interaction.depth = 4, 
+                    shrinkage = 0.1, 
+                    verbose=F)
+# kestirimleri test verileriyle hesapla:
 yhat.boost <- predict(boost.boston, newdata=Boston[-train,], n.trees=5000)
 mean((yhat.boost-boston.test)^2)
 ```
 
 Bu durumda MSE daha yüksek çıkmıştır. 
+
+Çapraz geçerleme 
+```{r}
+# CV
+boston.boost.cv <- gbm(medv~., 
+                       data = Boston[train,], 
+                       distribution = "gaussian", 
+                       n.trees=5000, 
+                       interaction.depth=4, 
+                       shrinkage = 0.1, 
+                       verbose=F, 
+                       cv.folds=10)
+
+#find the best prediction
+best.boost.boston <- gbm.perf(boston.boost.cv)
+```
+
+```{r}
+yhat.boost = predict(boston.boost.cv, 
+                     newdata = Boston[-train,],
+                     n.trees = best.boost.boston)
+mean((yhat.boost-boston.test)^2)
+```
+
+## `{XGBoost}` Paketi 
+
+`{XGBoost}` (eXtreme Gradient Boosting) (bkz. [https://cran.r-project.org/web/packages/xgboost/index.html](https://cran.r-project.org/web/packages/xgboost/index.html) ve [https://xgboost.readthedocs.io/en/latest/R-package/xgboostPresentation.html](https://xgboost.readthedocs.io/en/latest/R-package/xgboostPresentation.html)) kütüphanesi gradyan takviye yöntemini uygular. 
+
+```{r}
+library(xgboost)
+```
+
+
+```{r}
+# eğitim-test ayırımı (yukarıda yapmıştık)
+train.boston <- Boston[train,]
+test.boston <- Boston[-train,]
+```
+
+`{XGBoost}` paketinde verilerin `xgb.DMatrix` nesnesine dönüştürülmesi gerekir (bu sparse ya da dense matrislere izin verir ve böylece hesaplamalar daha etkin yapılabilir). 
+```{r}
+# veri matrisini oluştur
+data_matrix <- as.matrix(train.boston[!names(train.boston) %in% c("medv")])
+#
+dtrain <- xgb.DMatrix(data = data_matrix, # kestirim değişkenlerini içeren matris
+                      label = train.boston$medv # tepki değişkenini içeren vektör 
+                      )
+
+boston.xgb <- xgboost(data = dtrain, 
+                      max_depth = 2, 
+                      eta = 0.2, 
+                      nthread = 2, 
+                      nrounds = 40, 
+                      lambda = 0, 
+                      objective = "reg:squarederror")
+```
+
+
+```{r}
+# test veri matrisini oluştur
+dtest <- as.matrix(test.boston[!names(train.boston) %in% c("medv")])
+# kestirimleri hesapla
+yhat.xgb <- predict(boston.xgb, dtest)
+# MSE hesapla
+mean((yhat.xgb - test.boston$medv)^2)
+```
+
+```{r}
+set.seed(123456)
+param <- list("max_depth" = 3, 
+              "eta" = 0.2, 
+              "objective" = "reg:squarederror", 
+              "lambda" = 0)
+cv.nround <- 500
+cv.nfold <- 5
+boston.xgb.cv <- xgb.cv(param = param, 
+                        data = dtrain, 
+                        nfold = cv.nfold, 
+                        nrounds = cv.nround,
+                        early_stopping_rounds = 200, # 
+                        verbose=0)
+```
+
+```{r}
+boston.xgb = xgboost(param=param, 
+                     data=dtrain, 
+                     nthread=2, 
+                     nrounds=boston.xgb.cv$best_iteration, 
+                     verbose=0)
+```
+
+```{r}
+yhat.xgb <- predict(boston.xgb,dtest)
+mean((yhat.xgb - test.boston$medv)^2)
+```
+```{r}
+importance <- xgb.importance(colnames(train.boston[!names(train.boston) %in% c("medv")]), model=boston.xgb)
+importance
+```
+
+```{r}
+xgb.plot.importance(importance, rel_to_first=TRUE, xlab="Relative Importance")
+```
+
+## Tidymodels 
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(xgboost)
+```
+
+```{r}
+# determine training and test sets
+# 75% train, 25% test, with stratified sampling based on medv
+
+set.seed(135)
+boston_split <- initial_split(Boston, prop=0.75, strata=medv)
+
+boston_train <- boston_split %>% training()
+
+boston_test <- boston_split %>% testing()
+```
+
+```{r}
+xgb_spec <- boost_tree(
+  trees = 1000, 
+  tree_depth = tune(), min_n = tune(), 
+  loss_reduction = tune(),                     ## first three: model complexity
+  sample_size = tune(), mtry = tune(),         ## randomness
+  learn_rate = tune(),                         ## step size
+) %>% 
+  set_engine("xgboost") %>% 
+  set_mode("regression")
+
+xgb_spec
+```
+
+
+```{r}
+# hyperparameter grid
+xgb_grid <- grid_latin_hypercube(
+  tree_depth(),
+  min_n(),
+  loss_reduction(),
+  sample_size = sample_prop(),
+  finalize(mtry(), boston_train),
+  learn_rate(),
+  size = 30
+)
+xgb_grid
+```
+
+
+```{r}
+xgb_wf <- workflow() %>%
+  add_formula(medv ~ .) %>%
+  add_model(xgb_spec)
+
+xgb_wf
+```
+
+
+```{r}
+# CV folds 
+set.seed(123)
+boston_folds <- vfold_cv(boston_train, v = 5, strata = medv)
+
+boston_folds
+```
+
+
+```{r}
+library(doParallel)
+doParallel::registerDoParallel()
+
+set.seed(234)
+xgb_res <- tune_grid(
+  xgb_wf,
+  resamples = boston_folds,
+  grid = xgb_grid,
+  control = control_grid(save_pred = TRUE)
+)
+
+xgb_res
+```
+
+
+```{r}
+collect_metrics(xgb_res)
+```
+
+```{r}
+xgb_res %>% collect_metrics(summarize=FALSE)
+```
+
+
+```{r}
+xgb_res %>%
+  collect_metrics(summarize = FALSE) %>%
+  filter(.metric == 'rmse') %>%
+  group_by(id) %>%
+  summarize(min_rmse = min(.estimate),
+            median_rmse = median(.estimate),
+            max_rmse = max(.estimate))
+```
+
+
+```{r}
+xgb_res %>%
+  show_best(metric = 'rmse', n = 5)
+```
+
+
+```{r}
+xgb_res %>%
+  show_best(metric = 'rsq', n = 5)
+```
+
+```{r}
+best_xgb_model <- xgb_res %>%
+  select_best(metric = 'rmse')
+best_xgb_model
+```
+
+
+```{r}
+# finalize the workflow (fixes the hyperparameters)
+final_boston_wkfl <- xgb_wf %>%
+  finalize_workflow(best_xgb_model)
+final_boston_wkfl
+```
+
+
+```{r}
+# train the decision tree 
+boston_final_fit <- final_boston_wkfl %>%
+  last_fit(split = boston_split)
+boston_final_fit %>%
+  collect_metrics()
+
+```
+```{r}
+library(vip)
+
+boston_final_fit %>%
+  pluck(".workflow", 1) %>%   
+  pull_workflow_fit() %>% 
+  vip(num_features = 10) 
+```
+
+
 
 <br/>
 
