@@ -4,7 +4,6 @@
     <title>Doğrusal Olmayan Modeller</title>
     <meta charset="utf-8" />
     <meta name="author" content="Hüseyin Taştan" />
-    <script src="libs/header-attrs-2.8/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
   </head>
@@ -150,7 +149,7 @@ Dikkat: her gözlem `\(C_0,C_1,…,C_K\)` gruplarından birine girmelidir.
 
 - `\(X\)`'in herhangi bir değeri için 
 `$$C_0(X) + C_1(X) + \ldots + C_K(X) = 1$$`
-yazılabilir ($X$ değerleri `\(K+1\)` gruptan birinde yer almalıdır). 
+yazılabilir ( `\(X\)` değerleri `\(K+1\)` gruptan birinde yer almalıdır). 
 - Modelin tahmini OLS ile yapılır.  `\(C_1(X), C_2(X),\ldots, C_K(X)\)` kukla değişkenleri modele eklenir:
 `$$y_{i}=\beta_{0}+\beta_{1} C_{1}\left(x_{i}\right)+\beta_{2} C_{2}\left(x_{i}\right)+\ldots+\beta_{K} C_{K}\left(x_{i}\right)+\epsilon_{i}$$`
 - `\(\beta_0\)`: `\(X&lt;c_1\)` olduğunda `\(Y\)`'nin ortalaması 
@@ -181,7 +180,7 @@ name: basis
 ---
 # Parçalı polinomlar
 - Pratikte `\(X\)`'in tüm değerleri üzerine bir yüksek dereceli polinom regresyonu genellikle tercih edilmez. Alternatif olarak `\(X\)`'in bazı değer aralıkları için düşük dereceli polinom tahmin edilmesidir. .
-- `\(X\)`'in değer aralığı adım fonksiyonunda olduğu gibi alt aralıklara bölünür. Kesme noktalarına düğü (knot) adı verilir. 
+- `\(X\)`'in değer aralığı adım fonksiyonunda olduğu gibi alt aralıklara bölünür. Kesme noktalarına düğüm (knot) adı verilir. 
 - Örneğin, `\(c\)` düğüm noktasını kullanarak bir parçalı kübik polinom modeli: 
 `$$y_{i}=\left\{\begin{array}{ll}
 \beta_{01}+\beta_{11} x_{i}+\beta_{21} x_{i}^{2}+\beta_{31} x_{i}^{3}+\epsilon_{i} &amp; \text { if } x_{i}&lt;c \\
@@ -198,7 +197,7 @@ name: basis
 ]
 .pull-right[
 - Ücret-yaş parçalı kübik polinom modeli (düğüm noktası age=50). 
-- Düğün noktasında süreksizlik var. 
+- Düğüm noktasında süreksizlik var. 
 - Polinom modelini düğüm noktasında sürekli olacak şekilde kısıtlayabiliriz. 
 - Süreklilik kısıtının yanı sıra `\(d-1\)` türevin sürekli olmasını gerektiren düzgünlük kısıtını da koyabiliriz (smoothness) 
 ]
@@ -315,8 +314,11 @@ name: natural
 # Düğümlerin yeri ve sayısının belirlenmesi 
 
 - Pratikte düğüm sayısına ve bu düğümlerin yerine karar vermemiz gerekir.
+
 - Temel ilke: fonksiyonun hızlıca değiştiği bölgelere daha fazla düğüm noktası yerleştir, fonksiyonun daha stabil olduğu bölgelere ise daha az. 
+
 - Diğer bir opsiyon düğüm noktasına karar verdikten sonra kullandığımız yazılımın otomatik olarak bunların yerlerini belirlemesidir (örneğin 25, 50, 75 yüzdelik dilimler).
+
 - Düğüm sayısının belirlenmesinde çapraz geçerleme yaklaşımı kullanılabilir. 
 
 ---
@@ -338,8 +340,10 @@ name: smoothing
 
 # Düzleştirme Spline'ları 
 - Regresyon spline'ları: bir baz fonksiyon kümesi tanımla ve modeli OLS ile tahmin et. 
-- Altarnatif yaklaşım: verilere en iyi uyumu veren `\(g(x)\)` gibi bir fonksiyon bul. Bunun için kalıntı kareleri toplamı, `\(RSS = \sum_{i=1}^{n}\left(y_{i}-g\left(x_{i}\right)\right)^{2}\)` en küçük yapılır. 
+
+- Alternatif yaklaşım: verilere en iyi uyumu veren `\(g(x)\)` gibi bir fonksiyon bul. Bunun için kalıntı kareleri toplamı, `\(RSS = \sum_{i=1}^{n}\left(y_{i}-g\left(x_{i}\right)\right)^{2}\)` en küçük yapılır. 
 - Ancak böyle bir problemde uygun kısıtlar konmazsa aşırı-uyum problemi ortaya çıkabilir. Bundan kaçınmak için fonksiyonun düzgün (smooth) olmasını isteriz. 
+
 - Bunu sağlamanın bir yolu amaç fonksiyonuna bir ceza terimi eklemektir: 
 `$$\sum_{i=1}^{n}\left(y_{i}-g\left(x_{i}\right)\right)^{2}+\lambda \int g^{\prime \prime}(t)^{2} d t$$`
 Burada `\(\lambda\)` negatif olmayan bir ayarlanma parametresidir. `\(g^{\prime \prime}(t)\)` ise `\(g(x)\)`'in ikinci türevidir. 
@@ -368,10 +372,14 @@ Burada `\(\lambda\)` negatif olmayan bir ayarlanma parametresidir. `\(g^{\prime 
 # Düzleştirme parametresinin seçimi 
 
 -  `\(\lambda\)` büyüdükçe fonksiyon doğrusala yaklaşır (en küçük kareler doğrusu) 
+
 - Ara değerler için fonksiyon `\(g(\cdot)\)`  eğitim verilerine düzgün bir şekilde uyumlanmaya çalışır. 
 - Ayarlanma parametresi `\(\lambda\)` düzleştirme spline'larının ne kadar değişken olduğunu kontrol eder ve efektif serbestlik derecesi ile ilişkilidir. 
+
 -  `\(\lambda\)`  0'dan `\(\infty\)`'a doğru değişirken efektif serbestlik derecesi `\(n\)`'den  2'ye doğru değişir. 
+
 - Düğüm noktası seçimine gerek yoktur. Sadece `\(\lambda\)` veya efektif serbestlik derecesinin seçimi yeterlidir. 
+
 - Bunun seçiminde çapraz geçerleme ya da LOOCV kullanılabilir.  
 
 ---
@@ -385,7 +393,7 @@ name: local
 
 # Yerel Regresyon 
 
-- Adından da anlaşılacağı gibi yerel regresyon hedef `\(x_0\)` noktasının belirli bir komşulugundaki gözlemleri kullanır.  
+- Adından da anlaşılacağı gibi yerel regresyon hedef `\(x_0\)` noktasının belirli bir komşuluğundaki gözlemleri kullanır.  
 - Bir ağırlıklandırma fonksiyonu yardımıyla hedef noktaya yakın gözlemlere daha fazla ağırlık verilir.  
 - Bu ağırlık fonksiyonun kernel fonksiyonu da denir: 
 `$$K_{i 0}=\frac{1}{h} k\left(\frac{x_{i}-x_{0}}{h}\right)$$`
@@ -432,7 +440,7 @@ Burada `\(f_{j}\left(x_{i j}\right)\)` doğrusal olmayan düzgün bir fonksiyond
 - Model toplamsal bir yapıya sahiptir çünkü her bir X değişkeni için ayrı bir doğrusal olmayan fonksiyon kullanılsa da sonuçta bunlar toplanır. Örneğin, 
 `$$\text { wage }=\beta_{0}+f_{1}(\text { year })+f_{2}(\text { age })+f_{3}(\text { education })+\epsilon$$`
 
-(see the next graph)
+(izleyen grafiğe bkz.)
 
 ---
 # GAMs: Örnek
