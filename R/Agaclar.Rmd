@@ -134,15 +134,17 @@ library(MASS)
 library(tree)
 set.seed(81)
 train <- sample(1:nrow(Boston), nrow(Boston)/2)
-tree.boston <- tree(medv ~ ., Boston, subset = train)
-summary(tree.boston)
+tree_boston <- tree(medv ~ ., 
+                    data = Boston, 
+                    subset = train)
+summary(tree_boston)
 ```
 
 Yukarıdaki çıktıya göre ağaçta 4 değişken year alıyor: "rm"    "lstat" "crim"  "age"  
 
 ```{r}
-plot(tree.boston)
-text(tree.boston, pretty=0)
+plot(tree_boston)
+text(tree_boston, pretty=0)
 ```
 
 `lstat`: sosyoekonomik statüsü düşük olan hanelerin oranı. Bu değişkenin düşük olduğu yerlerde evler daha pahalıdır. 
@@ -150,24 +152,24 @@ text(tree.boston, pretty=0)
 
 Ağacın budanması: 
 ```{r}
-cv.boston <- cv.tree(tree.boston)
-plot(cv.boston$size, cv.boston$dev, type='b')
+cv_boston <- cv.tree(tree_boston)
+plot(cv_boston$size, cv_boston$dev, type='b')
 ```
 
 Çapraz geçerleme en karmaşık ağacı seçti. Yine de ağacı budamak istersek `prune.tree()` fonksiyonunu kullanabiliriz:
 ```{r}
-prune.boston <- prune.tree(tree.boston, best=5)
-plot(prune.boston)
-text(prune.boston, pretty=0)
+prune_boston <- prune.tree(tree_boston, best=5)
+plot(prune_boston)
+text(prune_boston, pretty=0)
 ```
 
 Budanmamış ağaç üzerinden test hatasının tahmini: 
 ```{r}
-yhat <- predict(tree.boston, newdata = Boston[-train,])
-boston.test <- Boston[-train, "medv"]
-plot(yhat,boston.test)
+yhat <- predict(tree_boston, newdata = Boston[-train,])
+boston_test <- Boston[-train, "medv"]
+plot(yhat, boston_test)
 abline(0,1)
-mean((yhat-boston.test)^2)
+mean((yhat - boston_test)^2)
 ```
 Test MSE = 18.93.  
 
@@ -176,38 +178,43 @@ Test MSE = 18.93.
 
 # Bagging ve Rassal Ormanlar 
 
-Örnek veri seti = `Boston`. Bagging ve rassal ormanlar için R `randomForest` 
-paketi kullanılabilir. Bagging rassal ormanların özel bir halidir (m = p). Bagging tahmini: 
+Örnek veri seti = `Boston`. 
+
+Bagging ve rassal ormanlar için R `randomForest` 
+paketi kullanılabilir. Bagging rassal ormanların özel bir halidir (m = p). 
+
+Bagging tahmini: 
 ```{r, warning=FALSE}
 library(randomForest)
 set.seed(1)
-bag.boston <- randomForest(medv ~ ., 
+bag_boston <- randomForest(medv ~ ., 
                            data = Boston, 
                            subset = train, 
-                           mtry=13, 
-                           importance=TRUE)
-bag.boston
+                           mtry = 13, 
+                           importance = TRUE
+                           )
+bag_boston
 ```
 
 `mtry=13` ayarlanma parametresi = 13 değişkenin tamamı her ayırımda dikkate alınacak (bagging). Modelin test setindeki performansı: 
 ```{r}
-yhat.bag <- predict(bag.boston, newdata = Boston[-train,])
-plot(yhat.bag, boston.test)
+yhat_bag <- predict(bag_boston, newdata = Boston[-train,])
+plot(yhat_bag, boston_test)
 abline(0,1)
-mean((yhat.bag-boston.test)^2)
+mean((yhat_bag - boston_test)^2)
 ```
 
 Test MSE = 10.13872. 
 
 `randomForest()` fonksiyonunda `ntree` opsiyonu ile ağacın büyüklüğünü değiştirebiliriz:
 ```{r}
-bag.boston <- randomForest(medv ~ ., 
+bag_boston <- randomForest(medv ~ ., 
                            data = Boston, 
                            subset = train, 
-                           mtry=13, 
-                           ntree=25)
-yhat.bag <- predict(bag.boston, newdata = Boston[-train,])
-mean((yhat.bag-boston.test)^2)
+                           mtry = 13, 
+                           ntree = 25)
+yhat_bag <- predict(bag_boston, newdata = Boston[-train,])
+mean((yhat_bag - boston_test)^2)
 ```
 
 Rassal orman tahmini de benzer adımlara sahiptir. Ancak bu durumda daha küçük bir `mtry` değeri kullanırız. Default olarak `randomForest()` fonksiyonu $p/3$ değişkeni kullanır (sınıflama için 
@@ -215,24 +222,24 @@ $\sqrt{p}$). Aşağıda `mtry = 6` kullanılmıştır:
 ```{r}
 # random forest prediction
 set.seed(1)
-rf.boston <- randomForest(medv ~ ., 
+rf_boston <- randomForest(medv ~ ., 
                           data = Boston, 
                           subset = train, 
                           mtry=6, 
                           importance = TRUE)
-yhat.rf <- predict(rf.boston, newdata=Boston[-train,])
-mean((yhat.rf-boston.test)^2)
+yhat_rf <- predict(rf_boston, newdata = Boston[-train,])
+mean((yhat_rf - boston_test)^2)
 ```
 
 Rassal ormanlar küçük de olsa daha iyi bir test başarısı sergiledi. 
 
 `importance()` fonksiyonunu kullanarak her bir değişkenin önem düzeyini görebiliriz:
 ```{r}
-importance(rf.boston)
+importance(rf_boston)
 ```
 
 ```{r}
-varImpPlot(rf.boston)
+varImpPlot(rf_boston)
 ```
 
 Sonuçlara göre bölgenin refah düzeyi (`lstat`) ve ev büyüklüğü (`rm`) en önemli değişkenlerdir. 
@@ -243,22 +250,22 @@ Sonuçlara göre bölgenin refah düzeyi (`lstat`) ve ev büyüklüğü (`rm`) e
 
 ## `{gbm}` Paketi 
 
-Boosting (takviye) yöntemi için `gbm` paketindeki `gbm()` fonksiyonu kullanılabilir (bkz. [https://www.rdocumentation.org/packages/gbm/versions/2.1.8](https://www.rdocumentation.org/packages/gbm/versions/2.1.8)). 
+Boosting (takviye) yöntemi için `{gbm}` paketindeki `gbm()` fonksiyonu kullanılabilir (bkz. [https://www.rdocumentation.org/packages/gbm/versions/2.1.8](https://www.rdocumentation.org/packages/gbm/versions/2.1.8)). 
 
-Örnek olarak `Boston` veri seti için bir takviyeli ağaç tahmin edelim. Bunun için  `gbm()` fonksiyonunu `distribution="gaussian"` opsiyonu ile çalıştıracağız (regresyon problemi olduğu için). İkili sınıflama problemleri için `distribution="bernoulli"` kullanılabilir. `n.trees=5000` opsiyonu 5000 ağaç oluşturulacağını, `interaction.depth=4` her ağacın derinliğini belirtmektedir.  
+Örnek olarak `Boston` veri seti için bir takviyeli ağaç tahmin edelim. Bunun için  `gbm()` fonksiyonunu `distribution="gaussian"` opsiyonu ile çalıştıracağız (regresyon problemi olduğu için). İkili sınıflama problemleri için `distribution="bernoulli"` kullanılabilir. `n.trees = 5000` opsiyonu 5000 ağaç oluşturulacağını, `interaction.depth = 4` her ağacın derinliğini belirtmektedir.  
 ```{r, warning=FALSE}
 library(gbm)
 set.seed(1)
-boost.boston <- gbm(medv ~ ., 
+boost_boston <- gbm(medv ~ ., 
                     data = Boston[train,], 
                     distribution = "gaussian",
                     n.trees = 5000, 
-                    interaction.depth=4)
+                    interaction.depth = 4)
 ```
 
 
 ```{r, warning=FALSE}
-summary(boost.boston)
+summary(boost_boston)
 ```
 
 Yukarıda `summary()` fonksiyonu her bir değişken için göreceli etki istatistiklerini ve grafiğini vermektedir. Buna göre, önceki sonuçlarla uyumlu olarak, `lstat` ve `rm` en önemli değişkenlerdir. 
@@ -266,58 +273,61 @@ Yukarıda `summary()` fonksiyonu her bir değişken için göreceli etki istatis
 Buna ek olarak değişkenlerin kısmi etkilerini de görselleştirebiliriz:
 ```{r}
 par(mfrow=c(1,2))
-plot(boost.boston,i="rm")
-plot(boost.boston,i="lstat")
+plot(boost_boston, i="rm")
+plot(boost_boston, i="lstat")
 ```
 
 Kısmi bağımlılık grafikleri diğer değişkenlerin etkisi arındırıldıktan sonra bir değişkenin çıktı üzerindeki marjinal etkisini göstermektedir. Buna göre medyan ev fiyatları `rm`'ye göre artarken, `lstat` değişkenine göre azalmaktadır. 
 
 Şimdi takviyeli (boosted) ağaç modeline göre `medv` değişkenini test verisinde tahmin edelim
 ```{r}
-yhat.boost <- predict(boost.boston, 
-                      newdata=Boston[-train,], 
-                      n.trees=5000)
-boston.test <- Boston[-train, "medv"]
-mean((yhat.boost-boston.test)^2)
+yhat_boost <- predict(boost_boston, 
+                      newdata = Boston[-train,], 
+                      n.trees = 5000
+                      )
+boston_test <- Boston[-train, "medv"]
+mean((yhat_boost - boston_test)^2)
 ```
 
-Yukarıda default $\lambda = 0.001$ (küçültme, shrinkage) parametresi kullanıldı. $\lambda=0.1$ için yeniden tahmin edelim: 
+Yukarıda default $\lambda = 0.1$ (küçültme, shrinkage) parametresi kullanıldı. $\lambda=0.2$ için yeniden tahmin edelim: 
 ```{r}
-boost.boston <- gbm(medv ~ ., 
+set.seed(1)
+boost_boston <- gbm(medv ~ ., 
                     data = Boston[train,],
                     distribution = "gaussian", 
                     n.trees=5000,
                     interaction.depth = 4, 
-                    shrinkage = 0.1, 
-                    verbose=F)
+                    shrinkage = 0.2, 
+                    verbose = F
+                    )
 # kestirimleri test verileriyle hesapla:
-yhat.boost <- predict(boost.boston, newdata=Boston[-train,], n.trees=5000)
-mean((yhat.boost-boston.test)^2)
+yhat_boost <- predict(boost_boston, newdata=Boston[-train,], n.trees=5000)
+mean((yhat_boost - boston_test)^2)
 ```
-
-Bu durumda MSE daha yüksek çıkmıştır. 
+ 
 
 Çapraz geçerleme 
 ```{r}
 # CV
-boston.boost.cv <- gbm(medv~., 
+set.seed(1)
+boston_boost_cv <- gbm(medv ~ ., 
                        data = Boston[train,], 
                        distribution = "gaussian", 
-                       n.trees=5000, 
+                       n.trees = 5000, 
                        interaction.depth=4, 
                        shrinkage = 0.1, 
-                       verbose=F, 
-                       cv.folds=10)
+                       verbose = F, 
+                       cv.folds = 10)
 
 #find the best prediction
-best.boost.boston <- gbm.perf(boston.boost.cv)
+best_boost_boston <- gbm.perf(boston_boost_cv)
 ```
 
 ```{r}
-yhat.boost = predict(boston.boost.cv, 
+yhat_boost = predict(boston_boost_cv, 
                      newdata = Boston[-train,],
-                     n.trees = best.boost.boston)
-mean((yhat.boost-boston.test)^2)
+                     n.trees = best_boost_boston)
+mean((yhat_boost - boston_test)^2)
 ```
 
 ## `{XGBoost}` Paketi 
@@ -331,20 +341,20 @@ library(xgboost)
 
 ```{r}
 # eğitim-test ayırımı (yukarıda yapmıştık)
-train.boston <- Boston[train,]
-test.boston <- Boston[-train,]
+train_boston <- Boston[train,]
+test_boston <- Boston[-train,]
 ```
 
 `{XGBoost}` paketinde verilerin `xgb.DMatrix` nesnesine dönüştürülmesi gerekir (bu sparse ya da dense matrislere izin verir ve böylece hesaplamalar daha etkin yapılabilir). 
 ```{r}
 # veri matrisini oluştur
-data_matrix <- as.matrix(train.boston[!names(train.boston) %in% c("medv")])
+data_matrix <- as.matrix(train_boston[!names(train_boston) %in% c("medv")])
 #
 dtrain <- xgb.DMatrix(data = data_matrix, # kestirim değişkenlerini içeren matris
-                      label = train.boston$medv # tepki değişkenini içeren vektör 
+                      label = train_boston$medv # tepki değişkenini içeren vektör 
                       )
 
-boston.xgb <- xgboost(data = dtrain, 
+xgb_boston <- xgboost(data = dtrain, 
                       max_depth = 2, 
                       eta = 0.2, 
                       nthread = 2, 
@@ -356,43 +366,44 @@ boston.xgb <- xgboost(data = dtrain,
 
 ```{r}
 # test veri matrisini oluştur
-dtest <- as.matrix(test.boston[!names(train.boston) %in% c("medv")])
+dtest <- as.matrix(test_boston[!names(train_boston) %in% c("medv")])
 # kestirimleri hesapla
-yhat.xgb <- predict(boston.xgb, dtest)
+yhat_xgb <- predict(xgb_boston, dtest)
 # MSE hesapla
-mean((yhat.xgb - test.boston$medv)^2)
+mean((yhat_xgb - test_boston$medv)^2)
 ```
 
 ```{r}
+# Çapraz geçerleme ile hiperparametre seçimi
 set.seed(123456)
 param <- list("max_depth" = 3, 
               "eta" = 0.2, 
               "objective" = "reg:squarederror", 
               "lambda" = 0)
-cv.nround <- 500
-cv.nfold <- 5
-boston.xgb.cv <- xgb.cv(param = param, 
+cv_nround <- 500
+cv_nfold <- 5
+xgb_boston_cv <- xgb.cv(param = param, 
                         data = dtrain, 
-                        nfold = cv.nfold, 
-                        nrounds = cv.nround,
+                        nfold = cv_nfold, 
+                        nrounds = cv_nround,
                         early_stopping_rounds = 200, # 
-                        verbose=0)
+                        verbose = 0)
 ```
 
 ```{r}
-boston.xgb = xgboost(param=param, 
-                     data=dtrain, 
-                     nthread=2, 
-                     nrounds=boston.xgb.cv$best_iteration, 
-                     verbose=0)
+xgb_boston <- xgboost(param = param, 
+                     data = dtrain, 
+                     nthread = 2, 
+                     nrounds = xgb_boston_cv$best_iteration, 
+                     verbose = 0)
 ```
 
 ```{r}
-yhat.xgb <- predict(boston.xgb,dtest)
-mean((yhat.xgb - test.boston$medv)^2)
+yhat_xgb <- predict(xgb_boston, dtest)
+mean((yhat_xgb - test_boston$medv)^2)
 ```
 ```{r}
-importance <- xgb.importance(colnames(train.boston[!names(train.boston) %in% c("medv")]), model=boston.xgb)
+importance <- xgb.importance(colnames(train_boston[!names(train_boston) %in% c("medv")]), model=xgb_boston)
 importance
 ```
 
@@ -442,7 +453,7 @@ xgb_grid <- grid_latin_hypercube(
   min_n(),
   loss_reduction(),
   sample_size = sample_prop(),
-  finalize(mtry(), boston_train),
+  finalize(mtry(), boston_train[,-14]),
   learn_rate(),
   size = 30
 )
@@ -536,9 +547,9 @@ boston_final_fit <- final_boston_wkfl %>%
   last_fit(split = boston_split)
 boston_final_fit %>%
   collect_metrics()
-
 ```
 ```{r}
+# variable importance plots
 library(vip)
 
 boston_final_fit %>%
